@@ -1,0 +1,12 @@
+{
+  "name": "lunarium-explorer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Explorador de blocos oficial da LunariumCoin (XLN): indexador próprio + API + site.",
+  "type": "module",
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.mjs",
+    "test": "node --disable-warning=ExperimentalWarning --test tests/*.test.mjs"
+  }
+}
