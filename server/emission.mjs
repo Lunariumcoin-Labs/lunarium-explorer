@@ -4,7 +4,9 @@
 
 const COIN = 1; // já trabalhamos em XLN "inteiro", não em satoshis
 
-export const MINT_HEIGHT = 1270000;
+// Altura REAL do mint na rede: o bloco 1.275.000 pagou 47.000.000 XLN ao endereço do mint e a rede o aceitou.
+// (O chainparams.cpp publicado no GitHub diz 1.270.000 — não é o que o binário da rede usa.)
+export const MINT_HEIGHT = 1275000;
 export const MINT_AMOUNT = 47000000 * COIN;
 
 export function blockValue(h) {

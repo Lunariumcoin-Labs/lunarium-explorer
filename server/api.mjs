@@ -80,6 +80,13 @@ export function createApi({ db, rpc, live, aliases }) {
 
   // ---------- auditoria da emissão (incremental: só confere blocos novos) ----------
   function audit() {
+    // se a regra mudar (ex.: altura do mint), a conferência recomeça do bloco 0 com a regra nova
+    const rule = `v2:mint@${MINT_HEIGHT}`;
+    if (getMeta(db, "audit_rule") !== rule) {
+      setMeta(db, "audit_violations", "[]");
+      setMeta(db, "audit_height", "-1");
+      setMeta(db, "audit_rule", rule);
+    }
     const checked = Number(getMeta(db, "audit_height", "-1"));
     const tip = tipInfo().height;
     if (tip > checked) {

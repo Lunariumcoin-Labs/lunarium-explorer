@@ -8,7 +8,7 @@ import { canonicalAddress, isValidAddress } from "./address.mjs";
 
 // Rótulos oficiais que vêm do próprio código do core (não dependem de arquivo).
 const BUILTIN_OFFICIAL = {
-  LRdqugAgypEzDVyp1cJ86bwDrNW12BDefT: "Mint 47M · bloco 1.270.000", // chainparams.cpp sXLNCoinSupplyMintAddress
+  LRdqugAgypEzDVyp1cJ86bwDrNW12BDefT: "Mint 47M · bloco 1.275.000", // sXLNCoinSupplyMintAddress (chainparams.cpp); mint aceito pela rede no bloco 1.275.000 sXLNCoinSupplyMintAddress
 };
 
 // Nomes que imitam o projeto ou a equipe ficam para os rótulos oficiais (evita golpe por imitação).

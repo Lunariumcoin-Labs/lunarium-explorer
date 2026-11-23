@@ -525,7 +525,7 @@ async function pageSupply() {
       <div class="stat"><div class="label">${icons.shield}${t("nodeCheck")}</div><div class="value">${s.nodeCheck ? (Math.abs(nodeDiff) < 0.01 ? `<span class="up">✓ ${t("matches")}</span>` : `<span class="down">${nf(nodeDiff, 8)}</span>`) : "—"}</div><div class="sub">${s.nodeCheck ? `${t("nodeCheckHint")} #${nf(s.nodeCheck.height, 0)}` : t("pending")}</div></div>
     </div>
     <section class="card"><div class="card-head"><h2>${icons.shield}${t("auditHow")}</h2><span class="pill ${ok ? "ok" : "bad"}">${ok ? "✓ " + t("auditPass") : "✗ " + t("auditFail")}</span></div>
-      <div class="card-pad muted" style="line-height:1.7">${t("auditExplain", { h: nf(s.audit.checkedUpTo, 0) })}
+      <div class="card-pad muted" style="line-height:1.7">${t("auditExplain", { h: nf(s.audit.checkedUpTo, 0), mh: nf(s.mint.height, 0) })}
         ${s.audit.list.length ? `<div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>${t("block")}</th><th class="num">${t("minted")}</th><th class="num">${t("limit")}</th></tr></thead><tbody>${s.audit.list.map((v) => `<tr><td>${blockLink(v.height)}</td><td class="num">${amount(v.minted)}</td><td class="num">${amount(v.limit)}</td></tr>`).join("")}</tbody></table></div>` : ""}
       </div></section>
     <section class="card" style="margin-top:18px"><div class="card-head"><h2>${icons.clock}${t("emission")}</h2></div>
