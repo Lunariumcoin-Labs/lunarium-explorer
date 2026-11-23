@@ -368,3 +368,26 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
   .gl-row { grid-template-columns: 16px 22px minmax(0, 1fr) 70px; }
   .gl-row .gl-bar { display: none; }
 }
+
+/* ---------- apelidos (alias) ---------- */
+.alias { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; color: var(--gold-2); max-width: 100%; }
+.alias:hover { color: #fff; }
+.alias-ok { display: inline-grid; place-items: center; color: var(--cyan-2); }
+.alias-ok svg, .pill svg { width: 15px; height: 15px; }
+.btn-sm { padding: 5px 11px; font-size: 12.5px; border-radius: 10px; vertical-align: middle; }
+.btn-sm svg { width: 15px; height: 15px; }
+.claim-grid { align-items: start; }
+.claim-form { display: grid; gap: 16px; }
+.claim-form label { display: grid; gap: 7px; font-weight: 700; font-size: 13.5px; color: var(--muted); }
+.claim-form .field { width: 100%; font-size: 14px; color: var(--text); font-weight: 500; }
+.claim-form textarea { resize: vertical; }
+.claim-cmd { display: grid; gap: 8px; }
+.claim-cmd .code { white-space: pre-wrap; word-break: break-all; }
+.claim-cmd .btn { justify-self: start; }
+.claim-msg { min-height: 22px; font-weight: 600; }
+.claim-msg.ok { color: var(--green); }
+.claim-msg.bad { color: var(--red); }
+.claim-help h3 { margin: 0 0 10px; }
+.claim-help ol { padding-inline-start: 20px; line-height: 1.7; color: var(--muted); }
+.claim-help ol li { margin-bottom: 8px; }
+.claim-help code { font-family: var(--mono); font-size: .9em; background: rgba(50, 185, 214, .1); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--cyan-2); }

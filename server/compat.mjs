@@ -9,19 +9,19 @@ import { canonicalAddress } from "./address.mjs";
 const SATS = 1e8;
 const asXln = (sats) => String(Number(sats) / SATS);
 
-export function createCompat({ db, rpc, live, api }) {
+export function createCompat({ db, rpc, live, api, aliases }) {
   const q = (sql) => db.prepare(sql);
   const st = {
     tx: q("SELECT * FROM txs WHERE txid = ?"),
     block: q("SELECT hash, time FROM blocks WHERE height = ?"),
     inputs: q(`SELECT o.value, a.address FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id WHERE o.spent_tx = ? ORDER BY o.spent_n`),
     outputs: q(`SELECT o.n, o.value, a.address FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id WHERE o.tx_id = ? ORDER BY o.n`),
-    addr: q("SELECT * FROM addresses WHERE address = ?"),
+    addr: q("SELECT id, address, balance, tx_count FROM addresses WHERE address = ?"),
     addrRows: q(`SELECT at.height, at.received, at.sent, at.balance, t.id, t.txid, t.time, t.kind
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ? ORDER BY at.height DESC, at.tx_id DESC LIMIT ? OFFSET ?`),
     addrTotals: q(`SELECT
-        SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.received - at.sent, 0) ELSE at.received END) AS rcv,
-        SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.sent - at.received, 0) ELSE at.sent END) AS snt
+        CAST(SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.received - at.sent, 0) ELSE at.received END) AS TEXT) AS rcv,
+        CAST(SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.sent - at.received, 0) ELSE at.sent END) AS TEXT) AS snt
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ?`),
     lastTxs: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ? ORDER BY t.height DESC, t.idx DESC LIMIT ? OFFSET ?`),
     lastTxsMin: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ? AND t.value_out >= ? ORDER BY t.height DESC, t.idx DESC LIMIT ? OFFSET ?`),
@@ -136,7 +136,7 @@ export function createCompat({ db, rpc, live, api }) {
   function mnList() {
     return live.state.masternodes.map((m) => ({
       rank: 0, network: m.network, txhash: m.txhash, outidx: m.outidx, status: m.status, addr: canonicalAddress(m.addr), version: m.version,
-      lastseen: m.lastseen, activetime: m.activetime, lastpaid: m.lastpaid, claim_name: "", ip_address: "", last_paid_block: 0,
+      lastseen: m.lastseen, activetime: m.activetime, lastpaid: m.lastpaid, claim_name: aliases?.nameOf(canonicalAddress(m.addr))?.name || "", ip_address: "", last_paid_block: 0,
     }));
   }
 

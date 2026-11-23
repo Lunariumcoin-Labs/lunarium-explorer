@@ -66,7 +66,16 @@ const dur = (sec) => {
 const flag = (cc) => (cc && /^[A-Z]{2}$/.test(cc) ? String.fromCodePoint(...[...cc].map((c) => 0x1f1a5 + c.charCodeAt(0))) : "🌐");
 const kindPill = (k) => ({ coinstake: `<span class="pill stake">${t("kStake")}</span>`, coinbase: `<span class="pill coinbase">${t("kCoinbase")}</span>` }[k] || `<span class="pill">${t("kTransfer")}</span>`);
 const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}" title="${esc(t("copy"))}" aria-label="${esc(t("copy"))}">${icons.copy}</button>`;
-const addrLink = (a, n = 12) => (a ? `<a class="hash" href="/address/${esc(a)}" data-link title="${esc(a)}">${esc(short(a, n))}</a>` : `<span class="soft">${t("noAddress")}</span>`);
+// Apelidos (alias): carregados uma vez e atualizados depois de um registro.
+let NAMES = {};
+async function loadNames() { try { NAMES = (await api("names")).names || {}; } catch {} }
+const aliasBadge = (v) => (v.official ? `<span class="alias-ok" title="${esc(t("aliasOfficial"))}">${icons.check}</span>` : "");
+const addrLink = (a, n = 12) => {
+  if (!a) return `<span class="soft">${t("noAddress")}</span>`;
+  const v = NAMES[a];
+  if (v) return `<a class="alias" href="/address/${esc(a)}" data-link title="${esc(a)}">${esc(v.name)}${aliasBadge(v)}</a>`;
+  return `<a class="hash" href="/address/${esc(a)}" data-link title="${esc(a)}">${esc(short(a, n))}</a>`;
+};
 const txLink = (id, n = 10) => `<a class="hash" href="/tx/${esc(id)}" data-link title="${esc(id)}">${esc(short(id, n))}</a>`;
 const blockLink = (h) => `<a href="/block/${h}" data-link>${nf(h, 0)}</a>`;
 
@@ -344,7 +353,9 @@ async function pageAddress({ id }, query) {
   const h = await api(`address/${a.address}/txs?offset=${offset}&limit=25`);
   const mn = a.masternodes.length;
   app.innerHTML = `<div class="page-enter">
-    ${title(icons.users, t("address"), `<span class="hash">${esc(a.address)}</span> ${copyBtn(a.address)}${a.legacy ? `<div class="soft" style="font-size:12.5px;margin-top:4px">${t("legacyForm")}: <span class="hash">${esc(a.legacy)}</span></div>` : ""}`)}
+    ${title(icons.users,
+      a.alias ? `${esc(a.alias.name)} ${a.alias.official ? `<span class="pill ok">${icons.check} ${t("aliasOfficial")}</span>` : `<span class="pill">${t("aliasClaimed")}</span>`}` : t("address"),
+      `<span class="hash">${esc(a.address)}</span> ${copyBtn(a.address)}${a.alias?.official ? "" : ` <a class="btn btn-sm" href="/claim?address=${esc(a.address)}" data-link>${icons.tag} ${a.alias ? t("changeAlias") : t("setAlias")}</a>`}${a.legacy ? `<div class="soft" style="font-size:12.5px;margin-top:4px">${t("legacyForm")}: <span class="hash">${esc(a.legacy)}</span></div>` : ""}`)}
     <section class="card addr-hero">
       <div>
         <div class="soft">${t("balance")} ${a.rank ? `<span class="pill" style="margin-inline-start:8px">#${nf(a.rank, 0)} ${t("richRank")}</span>` : ""} ${mn ? `<span class="pill mn">${icons.server} ${t("masternodeN", { n: mn })}</span>` : ""}</div>
@@ -524,6 +535,59 @@ function pageApi() {
     </section></div>`;
 }
 
+async function pageClaim(_, query) {
+  document.title = `${t("claimTitle")} — LunariumCoin Explorer`;
+  const pre = query.get("address") || "";
+  app.innerHTML = `<div class="page-enter">
+    ${title(icons.tag, t("claimTitle"), t("claimSub"))}
+    <div class="grid-2 claim-grid">
+      <section class="card card-pad">
+        <form id="claimForm" class="claim-form" autocomplete="off">
+          <label>${t("address")}<input class="field hash" name="address" value="${esc(pre)}" placeholder="L…" spellcheck="false" required/></label>
+          <label>${t("claimName")}<input class="field" name="name" maxlength="32" placeholder="${esc(t("claimNamePh"))}" spellcheck="false"/><small class="soft">${t("claimNameRules")}</small></label>
+          <div class="claim-cmd"><div class="soft">${t("claimCmdLabel")}</div><div class="code" id="claimCmd"></div><button type="button" class="btn btn-sm" id="claimCopy">${icons.copy} ${t("copy")}</button></div>
+          <label>${t("claimSignature")}<textarea class="field hash" name="signature" rows="3" placeholder="H…=" spellcheck="false" required></textarea></label>
+          <button class="btn primary" type="submit">${icons.tag} ${t("claimSubmit")}</button>
+          <div id="claimMsg" class="claim-msg" role="status"></div>
+        </form>
+      </section>
+      <section class="card card-pad claim-help">
+        <h3>${t("claimHow")}</h3>
+        <ol><li>${t("claimStep1")}</li><li>${t("claimStep2")}</li><li>${t("claimStep3")}</li><li>${t("claimStep4")}</li></ol>
+        <div class="notice">${t("claimRemove")}</div>
+        <p class="soft">${t("claimRulesNote")}</p>
+      </section>
+    </div></div>`;
+  const f = app.querySelector("#claimForm"), cmd = app.querySelector("#claimCmd"), msg = app.querySelector("#claimMsg");
+  const quote = (v) => JSON.stringify(String(v));
+  const upd = () => { cmd.textContent = `signmessage ${quote(f.address.value.trim() || "L…")} ${quote(f.name.value.trim())}`; };
+  f.address.addEventListener("input", upd);
+  f.name.addEventListener("input", upd);
+  upd();
+  app.querySelector("#claimCopy").addEventListener("click", () => navigator.clipboard?.writeText(cmd.textContent).then(() => toast(t("copied"))));
+  f.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "claim-msg";
+    msg.textContent = t("loading");
+    try {
+      const r = await fetch("/api/v1/claim", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ address: f.address.value.trim(), name: f.name.value, signature: f.signature.value.trim() }) });
+      const j = await r.json();
+      if (!j.ok) {
+        const key = "claimErr_" + j.code;
+        msg.className = "claim-msg bad";
+        msg.textContent = t(key) !== key ? t(key) : j.error || t("errorTitle");
+        return;
+      }
+      await loadNames();
+      msg.className = "claim-msg ok";
+      msg.innerHTML = `${j.removed ? t("claimRemoved") : t("claimOk", { name: esc(j.name) })} <a href="/address/${esc(j.address)}" data-link>${t("seeAddress")} →</a>`;
+    } catch {
+      msg.className = "claim-msg bad";
+      msg.textContent = t("errorTitle");
+    }
+  });
+}
+
 // ---------------- roteador ----------------
 const ROUTES = [
   [/^\/$/, pageHome, "home"],
@@ -539,8 +603,9 @@ const ROUTES = [
   [/^\/charts\/?$/, pageCharts, "charts"],
   [/^\/mempool\/?$/, pageMempool, "mempool"],
   [/^\/(api-docs|info)\/?$/, pageApi, "api"],
+  [/^\/claim\/?$/, pageClaim, "claim"],
 ];
-const NAV = [["/", "home"], ["/blocks", "blocks"], ["/masternodes", "masternodes"], ["/richlist", "richlist"], ["/network", "network"], ["/movement", "movement"], ["/supply", "supply"], ["/charts", "charts"], ["/api-docs", "api"]];
+const NAV = [["/", "home"], ["/blocks", "blocks"], ["/masternodes", "masternodes"], ["/richlist", "richlist"], ["/network", "network"], ["/movement", "movement"], ["/supply", "supply"], ["/charts", "charts"], ["/claim", "claim"], ["/api-docs", "api"]];
 
 async function render() {
   liveHandler = null;
@@ -622,8 +687,10 @@ function connectStream() {
 }
 
 initLang();
+const namesReady = loadNames();
 startVisits();
 startSpace($("#space"));
 chrome();
-render();
+// os apelidos chegam antes da primeira página (no máximo 1,5 s de espera; sem eles a página abre igual)
+Promise.race([namesReady, new Promise((r) => setTimeout(r, 1500))]).then(render);
 connectStream();

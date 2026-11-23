@@ -22,6 +22,8 @@ export const config = {
   publicUrl: env.EXPLORER_PUBLIC_URL || "https://explorerxln.com",
   // Preço: API oficial que o GaláxiaLunarium já consolida (maior preço entre as exchanges). Opcional.
   priceUrl: env.EXPLORER_PRICE_URL || "",
+  // Rótulos oficiais de endereços (JSON {"endereço": "nome"}), relido a cada 5 minutos.
+  labelsFile: env.EXPLORER_LABELS || "/etc/lunarium-explorer/labels.json",
   // false = só serve a API/site sem indexar (útil para testes locais com banco copiado).
   indexer: env.EXPLORER_INDEXER !== "0",
 };

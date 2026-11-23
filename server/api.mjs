@@ -30,14 +30,14 @@ const LIMIT_SQL = `(CASE
   WHEN height > 0 THEN 5100000000000000
   ELSE 5000000000 END + CASE WHEN kind = 'pow' THEN fees ELSE 0 END)`;
 
-export function createApi({ db, rpc, live, indexer }) {
+export function createApi({ db, rpc, live, aliases }) {
   const q = (sql) => db.prepare(sql);
   const big = (sql) => { const s = db.prepare(sql); s.setReadBigInts(true); return s; };
 
   const st = {
     tip: q("SELECT height, hash, time FROM blocks ORDER BY height DESC LIMIT 1"),
-    blockByHeight: q("SELECT * FROM blocks WHERE height = ?"),
-    blockByHash: q("SELECT * FROM blocks WHERE hash = ?"),
+    blockByHeight: q("SELECT height, hash, prev_hash, time, size, tx_count, kind, minted, fees, CAST(out_total AS TEXT) AS out_total, staker, mn_payee, mn_amount, difficulty, version, bits, nonce, merkleroot FROM blocks WHERE height = ?"),
+    blockByHash: q("SELECT height, hash, prev_hash, time, size, tx_count, kind, minted, fees, CAST(out_total AS TEXT) AS out_total, staker, mn_payee, mn_amount, difficulty, version, bits, nonce, merkleroot FROM blocks WHERE hash = ?"),
     blocksBefore: q("SELECT height, hash, time, size, tx_count, kind, minted, fees, staker, mn_payee, mn_amount FROM blocks WHERE height <= ? ORDER BY height DESC LIMIT ?"),
     blockTxs: q("SELECT id, txid, idx, kind, n_in, n_out, value_in, value_out, fee FROM txs WHERE height = ? ORDER BY idx"),
     txByTxid: q("SELECT * FROM txs WHERE txid = ?"),
@@ -49,7 +49,8 @@ export function createApi({ db, rpc, live, indexer }) {
       FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id LEFT JOIN txs st ON st.id = o.spent_tx
       WHERE o.tx_id = ? ORDER BY o.n`),
     outputOne: q("SELECT o.value, o.type, a.address FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id WHERE o.tx_id = ? AND o.n = ?"),
-    addr: q("SELECT * FROM addresses WHERE address = ?"),
+    // recebido/enviado acumulam o stake que volta a cada bloco e passam do limite exato de um Number: vêm como texto
+    addr: q("SELECT id, address, balance, CAST(received AS TEXT) AS received, CAST(sent AS TEXT) AS sent, tx_count, first_height, last_height FROM addresses WHERE address = ?"),
     addrRank: q("SELECT COUNT(*) + 1 AS r FROM addresses WHERE balance > ?"),
     addrTxs: q(`SELECT at.height, at.received, at.sent, at.balance, t.txid, t.time, t.kind
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ? ORDER BY at.height DESC, at.tx_id DESC LIMIT ? OFFSET ?`),
@@ -57,7 +58,7 @@ export function createApi({ db, rpc, live, indexer }) {
       WHERE o.addr_id = ? AND o.spent_tx IS NULL ORDER BY t.height DESC LIMIT ?`),
     mnRewards: big("SELECT COUNT(*) AS c, COALESCE(SUM(mn_amount), 0) AS s, MAX(height) AS last FROM blocks WHERE mn_payee = ?"),
     stakeRewards: big("SELECT COUNT(*) AS c, COALESCE(SUM(minted - COALESCE(mn_amount, 0)), 0) AS s, MAX(height) AS last FROM blocks WHERE staker = ?"),
-    rich: q("SELECT address, balance, received, sent, tx_count, last_height FROM addresses ORDER BY balance DESC LIMIT ?"),
+    rich: q("SELECT address, balance, CAST(received AS TEXT) AS received, CAST(sent AS TEXT) AS sent, tx_count, last_height FROM addresses ORDER BY balance DESC LIMIT ?"),
     utxoSum: big("SELECT COALESCE(SUM(balance), 0) AS s FROM addresses WHERE balance > 0"),
     noAddrUtxo: big("SELECT COALESCE(SUM(value), 0) AS s FROM outputs WHERE spent_tx IS NULL AND addr_id IS NULL"),
     mintedSum: big("SELECT COALESCE(SUM(minted), 0) AS m, COALESCE(SUM(CASE WHEN kind = 'pos' THEN fees ELSE 0 END), 0) AS burned FROM blocks"),
@@ -92,10 +93,27 @@ export function createApi({ db, rpc, live, indexer }) {
     return { checkedUpTo: tip, violations: violations.length, list: violations.slice(0, 20) };
   }
 
+  // Somas da cadeia mantidas de forma incremental (só os blocos novos entram na conta; num reorg recalcula tudo).
+  // Oferta = moedas criadas − taxas pagas: é exatamente a soma das saídas não gastas, sem varrer milhões de saídas.
+  const sumRange = big(`SELECT COALESCE(SUM(minted), 0) AS m, COALESCE(SUM(fees), 0) AS f,
+      COALESCE(SUM(CASE WHEN kind = 'pos' THEN fees ELSE 0 END), 0) AS burned FROM blocks WHERE height > ? AND height <= ?`);
+  const hashAt = q("SELECT hash FROM blocks WHERE height = ?");
+  let agg = null;
+  function chainSums() {
+    const t = tipInfo();
+    if (agg && agg.height === t.height && agg.hash === t.hash) return agg;
+    let base = agg;
+    if (!base || t.height < base.height || hashAt.get(base.height)?.hash !== base.hash) base = { height: -1, m: 0n, f: 0n, burned: 0n };
+    const r = sumRange.get(base.height, t.height);
+    agg = { height: t.height, hash: t.hash, m: base.m + r.m, f: base.f + r.f, burned: base.burned + r.burned };
+    return agg;
+  }
+
   function supply() {
     const tip = tipInfo().height;
-    const held = st.utxoSum.get().s + st.noAddrUtxo.get().s;
-    const { m, burned } = st.mintedSum.get();
+    const sums = chainSums();
+    const held = sums.m - sums.f;
+    const m = sums.m, burned = sums.burned;
     const expected = tip >= 0 ? BigInt(Math.round(expectedSupply(tip) * 1e8)) : 0n;
     // conferência com o próprio node: só vale com as duas contas na MESMA altura
     const raw = live.state.txoutset;
@@ -116,7 +134,16 @@ export function createApi({ db, rpc, live, indexer }) {
     };
   }
 
+  // O resumo da rede muda a cada bloco (ou a cada poucos segundos nos dados ao vivo): guarda por 3 s.
+  let statsCache = { at: 0, hash: null, v: null };
   function stats() {
+    const now = Date.now();
+    const th = tipInfo().hash;
+    if (statsCache.v && statsCache.hash === th && now - statsCache.at < 3000) return statsCache.v;
+    statsCache = { at: now, hash: th, v: computeStats() };
+    return statsCache.v;
+  }
+  function computeStats() {
     const tip = tipInfo();
     const recent = st.blockStats.get(Math.max(0, tip.height - 100));
     const day = st.txs24h.get(Math.floor(Date.now() / 1000) - 86400);
@@ -219,7 +246,7 @@ export function createApi({ db, rpc, live, indexer }) {
       txhash: m.txhash, outidx: m.outidx, status: m.status, network: m.network, version: m.version, activetime: m.activetime, lastpaid: m.lastpaid,
     }));
     return {
-      address: r.address, legacy: legacyAddress(r.address), balance: xln(r.balance), received: xln(r.received), sent: xln(r.sent), txCount: r.tx_count,
+      address: r.address, legacy: legacyAddress(r.address), alias: aliases?.nameOf(r.address) || null, balance: xln(r.balance), received: xln(r.received), sent: xln(r.sent), txCount: r.tx_count,
       firstHeight: r.first_height, lastHeight: r.last_height, rank: r.balance > 0 ? st.addrRank.get(r.balance).r : null,
       rewards: {
         masternode: { count: Number(mn.c), total: xln(mn.s), last: mn.last === null ? null : Number(mn.last) },
@@ -316,6 +343,8 @@ export function createApi({ db, rpc, live, indexer }) {
       const a = canonicalAddress(s);
       return { type: "address", id: a, empty: !st.addr.get(a) };
     }
+    const byName = aliases?.search(s);
+    if (byName) return { type: "address", id: byName };
     throw new HttpError(404, "nada encontrado para essa busca");
   }
 

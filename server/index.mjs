@@ -10,14 +10,16 @@ import { createLive } from "./live.mjs";
 import { createApi, HttpError } from "./api.mjs";
 import { createCompat } from "./compat.mjs";
 import { createVisits } from "./visits.mjs";
+import { createAliases, AliasError } from "./aliases.mjs";
 
 const log = (m) => console.log(`[${new Date().toISOString()}] ${m}`);
 
 const db = openDb(config.dbPath);
 const rpc = createRpc(config.rpc);
 const live = createLive({ db, rpc, priceUrl: config.priceUrl, log });
-const api = createApi({ db, rpc, live });
-const compat = createCompat({ db, rpc, live, api });
+const aliases = createAliases({ db, rpc, labelsFile: config.labelsFile, log });
+const api = createApi({ db, rpc, live, aliases });
+const compat = createCompat({ db, rpc, live, api, aliases });
 const visits = createVisits({ db, log });
 
 function readBody(req, max = 2048) {
@@ -36,7 +38,7 @@ const MIME = {
   ".css": "text/css; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml",
   ".ico": "image/x-icon", ".json": "application/json; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2",
 };
-const SPA_ROUTES = /^\/(|blocks|block\/[^/]+|tx\/[^/]+|address\/[^/]+|masternodes|richlist|network|movement|supply|charts|mempool|api-docs|info|search)\/?$/;
+const SPA_ROUTES = /^\/(|claim|blocks|block\/[^/]+|tx\/[^/]+|address\/[^/]+|masternodes|richlist|network|movement|supply|charts|mempool|api-docs|info|search)\/?$/;
 const indexHtmlPath = path.join(config.webDir, "index.html");
 
 const SECURITY_HEADERS = {
@@ -149,6 +151,7 @@ async function apiV1(req, res, parts, query) {
     case "masternodes": return sendJson(res, 200, api.masternodes(), "public, max-age=30");
     case "peers": return sendJson(res, 200, api.peers(), "public, max-age=60");
     case "mempool": return sendJson(res, 200, await api.mempool(), short);
+    case "names": return sendJson(res, 200, { names: aliases.all() }, "public, max-age=30");
     case "stream": {
       res.writeHead(200, { "content-type": "text/event-stream", "cache-control": "no-cache", connection: "keep-alive", "x-accel-buffering": "no" });
       res.write(`event: hello\ndata: ${JSON.stringify({ height: api.tipInfo().height })}\n\n`);
@@ -178,6 +181,17 @@ const server = http.createServer(async (req, res) => {
       }
       const out = await visits.handle({ a: p.get("a") || "read", sid: p.get("sid"), isNew: p.get("new") === "1", ip: clientIp(req), ua: req.headers["user-agent"] || "" });
       return sendJson(res, 200, out, "no-store");
+    }
+    if (pathname === "/api/v1/claim" && req.method === "POST") {
+      const raw = await readBody(req, 4096);
+      let p;
+      try { p = raw.trim().startsWith("{") ? JSON.parse(raw) : Object.fromEntries(new URLSearchParams(raw)); } catch { p = {}; }
+      try {
+        return sendJson(res, 200, await aliases.claim({ address: p.address, name: p.name, signature: p.signature, ip: clientIp(req) }), "no-store");
+      } catch (e) {
+        if (e instanceof AliasError) return sendJson(res, 400, { ok: false, code: e.code, error: e.message }, "no-store");
+        throw e;
+      }
     }
     if (req.method !== "GET" && req.method !== "HEAD") return sendText(res, 405, "method not allowed");
 
