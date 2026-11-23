@@ -31,6 +31,7 @@ export function createVisits({ db, log = console.log }) {
   const geoCache = new Map(); // hash(ip) → { cc, at }
   const salt = crypto.randomBytes(16).toString("hex"); // muda a cada reinício: o hash não identifica ninguém
   const perIp = new Map(); // limite de registros por IP (em memória, por hash)
+  const perNet = new Map(); // limite de visitantes novos por faixa de rede (em memória, por hash)
 
   const dayKey = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
 
@@ -99,6 +100,18 @@ export function createVisits({ db, log = console.log }) {
     if (!lim || now - lim.start > 60000) { lim = { start: now, n: 0 }; perIp.set(k, lim); }
     if (++lim.n > 40) return snapshot();
     if (perIp.size > 50000) perIp.clear();
+
+    // Freio de rede: no máximo 30 visitantes NOVOS por hora vindos da mesma faixa (IPv4 /16, IPv6 /48).
+    // Robôs que trocam de IP dentro da mesma faixa (ex.: 247 IPs de 152.163.x.x) param aqui.
+    if (a === "hit" && isNew) {
+      const v4 = /^(?:::ffff:)?(\d+)\.(\d+)\.\d+\.\d+$/.exec(ip || "");
+      const net = v4 ? `${v4[1]}.${v4[2]}` : String(ip || "").split(":").slice(0, 3).join(":");
+      const nk = crypto.createHash("sha256").update(salt + "net" + net).digest("hex").slice(0, 16);
+      let nl = perNet.get(nk);
+      if (!nl || now - nl.start > 3600000) { nl = { start: now, n: 0 }; perNet.set(nk, nl); }
+      if (++nl.n > 30) return snapshot();
+      if (perNet.size > 50000) perNet.clear();
+    }
 
     const t = Math.floor(now / 1000);
     if (a === "hit" || a === "view") {

@@ -16,18 +16,37 @@ function post(a, extra = {}) {
   }).catch(() => null);
 }
 
+let counted = false;
+
 export function startVisits() {
-  try { sid = sessionStorage.getItem("xln_explorer_sid"); } catch {}
-  if (!sid) {
-    sid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
-    try { sessionStorage.setItem("xln_explorer_sid", sid); } catch {}
+  // navegador automatizado (robôs que executam JavaScript) não conta
+  try { if (navigator.webdriver) return; } catch {}
+  let id = null;
+  try { id = sessionStorage.getItem("xln_explorer_sid"); } catch {}
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    try { sessionStorage.setItem("xln_explorer_sid", id); } catch {}
   }
-  let isNew = "1";
-  try { if (localStorage.getItem("xln_explorer_seen")) isNew = "0"; else localStorage.setItem("xln_explorer_seen", "1"); } catch {}
-  post("hit", { new: isNew });
-  setInterval(() => { if (!document.hidden) post("beat"); }, 45000);
+  // Só conta quem fica de verdade: um toque/clique/tecla real ou 10 s com a página visível.
+  // Robôs abrem a página e saem em ~3 s sem interagir (23/11/2026: 632 "visitantes" falsos assim).
+  const evs = ["pointerdown", "touchstart", "keydown", "wheel"];
+  let shown = 0;
+  const timer = setInterval(() => { if (!document.hidden && ++shown >= 10) go(); }, 1000);
+  const onInput = (e) => { if (e.isTrusted) go(); };
+  function go() {
+    if (counted) return;
+    counted = true;
+    clearInterval(timer);
+    evs.forEach((ev) => removeEventListener(ev, onInput, true));
+    sid = id;
+    let isNew = "1";
+    try { if (localStorage.getItem("xln_explorer_seen")) isNew = "0"; else localStorage.setItem("xln_explorer_seen", "1"); } catch {}
+    post("hit", { new: isNew });
+    setInterval(() => { if (!document.hidden) post("beat"); }, 45000);
+  }
+  evs.forEach((ev) => addEventListener(ev, onInput, { capture: true, passive: true }));
 }
-export function trackView() { if (sid) post("view"); }
+export function trackView() { if (sid && counted) post("view"); }
 
 const regionName = (cc) => {
   try { return new Intl.DisplayNames([intlTag().split("-u-")[0]], { type: "region" }).of(cc) || cc; } catch { return cc; }
