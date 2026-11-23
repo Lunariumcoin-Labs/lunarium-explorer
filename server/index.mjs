@@ -122,8 +122,11 @@ function clientIp(req) {
   const fwd = local ? String(req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || "").split(",")[0].trim() : "";
   return fwd || remote;
 }
+// Servidores da própria Lunarium (painel de recompensas, API do app, GaláxiaLunarium) não entram no limite.
+const RATE_EXEMPT = new Set(String(process.env.EXPLORER_RATE_EXEMPT || "").split(",").map((x) => x.trim()).filter(Boolean));
 function rateLimited(ip) {
   if (/^(::1|127\.0\.0\.1|::ffff:127\.0\.0\.1)$/.test(ip)) return false;
+  if (RATE_EXEMPT.has(ip) || RATE_EXEMPT.has(ip.replace(/^::ffff:/, ""))) return false;
   const now = Date.now();
   let h = hits.get(ip);
   if (!h || now - h.start > 60000) { h = { start: now, n: 0 }; hits.set(ip, h); }
@@ -225,6 +228,9 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, height: t.height, behindSeconds: t.time ? Math.round(Date.now() / 1000 - t.time) : null });
     }
     if (SPA_ROUTES.test(pathname)) return sendIndex(res);
+    // páginas do explorador antigo (eIquidus) que não existem aqui: leva para a equivalente
+    const legacy = /^\/orphans\/?$/.test(pathname) ? "/blocks" : /^\/(markets|reward)(\/.*)?$/.test(pathname) ? "/" : null;
+    if (legacy) { res.writeHead(301, { location: legacy, "cache-control": "public, max-age=86400" }); return res.end(); }
     if (pathname === "/favicon.ico") return serveStatic(req, res, "/assets/logo.png") || sendText(res, 404, "");
     if (pathname === "/robots.txt") return sendText(res, 200, `User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /ext/\n`);
     if (serveStatic(req, res, pathname)) return;
