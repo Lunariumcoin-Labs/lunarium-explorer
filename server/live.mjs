@@ -37,8 +37,30 @@ export function createLive({ db, rpc, priceUrl, log = console.log }) {
     state.updated.masternodes = Date.now();
   }
 
+  // Nós de versão antiga (2.x/3.x, protocolo < 70960) estão parados fora da ponta da rede e não servem para nada:
+  // o node do explorador não conversa com eles (ban de 1 ano). Só vale para o NOSSO node — tirar da rede
+  // inteira exige o spork de versão mínima (SPORK_14), que depende da chave spork.
+  const MIN_PROTOCOL = Number(process.env.EXPLORER_MIN_PEER_PROTOCOL || 70960);
+  async function banOldPeers(peers) {
+    for (const p of peers) {
+      if (!(p.version > 0) || p.version >= MIN_PROTOCOL) continue;
+      const ip = hostOf(p.addr);
+      if (!ip) continue;
+      try {
+        await rpc.call("setban", ip, "add", 365 * 86400);
+        log(`nó antigo banido do explorador: ${ip} (${(p.subver || "").replace(/^\/|\/$/g, "")}, protocolo ${p.version})`);
+      } catch (e) {
+        if (!/already banned/i.test(e.message)) log(`não consegui banir ${ip}: ${e.message}`);
+      }
+    }
+  }
+
   async function refreshPeers() {
-    const peers = await rpc.call("getpeerinfo");
+    let peers = await rpc.call("getpeerinfo");
+    if (peers.some((p) => p.version > 0 && p.version < MIN_PROTOCOL)) {
+      await banOldPeers(peers);
+      peers = await rpc.call("getpeerinfo");
+    }
     const ips = [...new Set(peers.map((p) => hostOf(p.addr)).filter((ip) => ip && !geo.has(ip) && isPublicIp(ip)))];
     if (ips.length) {
       try {
