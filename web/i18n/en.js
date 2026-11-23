@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "This address has no transactions on the network yet.",
   claimErr_signature_invalid: "The signature does not match this address and this alias. Sign exactly the same text.",
   peerOne: "node",
+  heroArtAlt: "Lunarium astronaut facing the logo, with code reflected on the helmet",
 };

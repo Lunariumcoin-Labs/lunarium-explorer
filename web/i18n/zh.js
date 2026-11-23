@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "该地址在网络上还没有任何交易。",
   claimErr_signature_invalid: "签名与此地址和别名不匹配。请对完全相同的文本签名。",
   peerOne: "个节点",
+  heroArtAlt: "Lunarium 宇航员面对标志，头盔上映出代码",
 };

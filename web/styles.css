@@ -414,3 +414,35 @@ img.flag, .flag-none { display: inline-block; width: 22px; height: 16px; border-
 .flag-none { box-shadow: none; background: none; font-size: 14px; line-height: 16px; text-align: center; }
 .gl-flag { display: inline-flex; align-items: center; }
 td img.flag { margin-inline-end: 6px; }
+
+/* ---------- vídeo do astronauta (abertura da carteira V5) ---------- */
+.hero-art { display: grid; place-items: center; }
+.hero-video { position: relative; width: 100%; max-width: 640px; aspect-ratio: 16 / 10; border-radius: 28px; overflow: hidden; isolation: isolate;
+  -webkit-mask-image: radial-gradient(ellipse 52% 54% at 50% 48%, #000 58%, rgba(0, 0, 0, .55) 80%, transparent 100%);
+  mask-image: radial-gradient(ellipse 52% 54% at 50% 48%, #000 58%, rgba(0, 0, 0, .55) 80%, transparent 100%); }
+.hero-video .hv-poster, .hero-video .hv-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  object-position: 42% 42%; transform: scale(1.18); transform-origin: 38% 40%; }
+.hero-video .hv-video { opacity: 0; transition: opacity .6s ease; }
+.hero-video.playing .hv-video { opacity: 1; }
+.hero-video.playing.fading .hv-video { opacity: 0; transition: opacity .45s ease; }
+.hero-video .hv-ring { position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(5, 9, 18, .55) 100%); }
+.hero-art::before { content: ""; position: absolute; width: 78%; aspect-ratio: 1; border-radius: 50%; z-index: -1;
+  background: radial-gradient(circle, rgba(50, 185, 214, .22), rgba(123, 92, 255, .1) 45%, transparent 70%); filter: blur(10px); }
+.hero-art { position: relative; height: auto; min-height: 360px; }
+
+/* ---------- topo: menu cabe sem cortar ---------- */
+.topbar-inner { max-width: 1480px; }
+@media (max-width: 1500px) { .lang-btn span { display: none; } }
+@media (max-width: 1360px) {
+  .menu-btn { display: flex; }
+  .mainnav { position: fixed; inset: 61px 0 auto 0; flex-direction: column; background: rgba(5, 9, 18, .97); border-bottom: 1px solid var(--line); padding: 10px 16px 16px; display: none; max-height: calc(100vh - 61px); overflow-y: auto; }
+  .mainnav.open { display: flex; }
+  .mainnav a { padding: 12px 14px; font-size: 15px; }
+  .top-actions { margin-inline-start: auto; }
+  .search.mini input { width: 240px; }
+}
+@media (max-width: 1040px) {
+  .hero-art { min-height: 0; height: auto; margin-bottom: 0; order: -1; }
+  .hero-video { max-width: 560px; }
+}

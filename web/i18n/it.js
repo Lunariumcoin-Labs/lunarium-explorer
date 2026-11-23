@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "Questo indirizzo non ha ancora transazioni sulla rete.",
   claimErr_signature_invalid: "La firma non corrisponde a questo indirizzo e a questo alias. Firma esattamente lo stesso testo.",
   peerOne: "nodo",
+  heroArtAlt: "Astronauta Lunarium davanti al logo, con il codice riflesso sul casco",
 };

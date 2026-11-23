@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "У этого адреса ещё нет транзакций в сети.",
   claimErr_signature_invalid: "Подпись не соответствует этому адресу и псевдониму. Подпишите точно такой же текст.",
   peerOne: "узел",
+  heroArtAlt: "Астронавт Lunarium перед логотипом, на шлеме отражается код",
 };

@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "לכתובת הזו עדיין אין עסקאות ברשת.",
   claimErr_signature_invalid: "החתימה אינה תואמת לכתובת ולכינוי האלה. חתמו בדיוק על אותו טקסט.",
   peerOne: "צומת",
+  heroArtAlt: "האסטרונאוט של Lunarium מול הלוגו, עם קוד שמשתקף בקסדה",
 };

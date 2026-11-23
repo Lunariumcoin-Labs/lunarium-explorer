@@ -36,7 +36,7 @@ function readBody(req, max = 2048) {
 const MIME = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml",
-  ".ico": "image/x-icon", ".json": "application/json; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2",
+  ".ico": "image/x-icon", ".mp4": "video/mp4", ".json": "application/json; charset=utf-8", ".txt": "text/plain; charset=utf-8", ".woff2": "font/woff2",
 };
 const SPA_ROUTES = /^\/(|claim|blocks|block\/[^/]+|tx\/[^/]+|address\/[^/]+|masternodes|richlist|network|movement|supply|charts|mempool|api-docs|info|search)\/?$/;
 const indexHtmlPath = path.join(config.webDir, "index.html");
@@ -64,13 +64,30 @@ function serveStatic(req, res, pathname) {
     res.writeHead(304, { "cache-control": "no-cache", "last-modified": lastMod });
     return res.end(), true;
   }
-  res.writeHead(200, {
+  const headers = {
     ...SECURITY_HEADERS,
     "content-type": MIME[ext] || "application/octet-stream",
-    "content-length": stat.size,
     "last-modified": lastMod,
+    "accept-ranges": "bytes",
     "cache-control": longCache ? "public, max-age=604800" : "no-cache",
-  });
+  };
+  // pedido por partes (vídeo): o navegador baixa só o trecho que vai tocar
+  const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ""));
+  if (range && (range[1] || range[2])) {
+    let start = range[1] ? Number(range[1]) : stat.size - Number(range[2]);
+    let end = range[1] && range[2] ? Number(range[2]) : stat.size - 1;
+    start = Math.max(0, start);
+    end = Math.min(end, stat.size - 1);
+    if (start > end) {
+      res.writeHead(416, { "content-range": `bytes */${stat.size}` });
+      return res.end(), true;
+    }
+    res.writeHead(206, { ...headers, "content-range": `bytes ${start}-${end}/${stat.size}`, "content-length": end - start + 1 });
+    if (req.method === "HEAD") return res.end(), true;
+    fs.createReadStream(file, { start, end }).pipe(res);
+    return true;
+  }
+  res.writeHead(200, { ...headers, "content-length": stat.size });
   if (req.method === "HEAD") return res.end(), true;
   fs.createReadStream(file).pipe(res);
   return true;

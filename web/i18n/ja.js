@@ -96,4 +96,5 @@ export default {
   claimErr_address_unused: "このアドレスにはまだネットワーク上の取引がありません。",
   claimErr_signature_invalid: "署名がこのアドレスとエイリアスに一致しません。まったく同じテキストに署名してください。",
   peerOne: "ノード",
+  heroArtAlt: "ロゴに向き合う Lunarium の宇宙飛行士。ヘルメットにコードが映る",
 };

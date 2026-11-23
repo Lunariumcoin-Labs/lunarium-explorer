@@ -1,7 +1,7 @@
 // LunariumCoin Explorer — site (sem framework, sem build). Rotas: /, /blocks, /block/:id, /tx/:id,
 // /address/:a, /masternodes, /richlist, /network, /movement, /supply, /charts, /mempool, /api-docs.
 import { startSpace } from "./space.js";
-import { astronautSvg, planetsSvg, icons } from "./art.js";
+import { icons } from "./art.js";
 import { t, setLang, lang, intlTag, LANGS, initLang } from "./i18n.js";
 import { flagOf, countryFlag } from "./flags.js";
 import qrcode from "./qrcode.mjs";
@@ -211,6 +211,52 @@ function txRows(list, isNew = false) {
   return list.map((x) => `<tr${isNew ? ' class="row-new"' : ""}><td>${txLink(x.txid, 8)}</td><td>${kindPill(x.kind)}</td><td class="hide-sm muted">${ago(x.time)}</td><td class="num">${amount(x.value)}</td></tr>`).join("");
 }
 
+// Astronauta da abertura da carteira V5 (garimpo.mp4): só o trecho final, diante da logo, com o código
+// refletido no capacete. Toca em loop com uma passagem suave; no celular, com economia de dados ou para quem
+// prefere menos movimento, fica só a imagem de capa (último quadro).
+const HERO_LOOP = { start: 11.5, end: 19.9 };
+function heroVideoHtml() {
+  return `<div class="hero-video">
+    <img class="hv-poster" src="/assets/astronaut-poster.jpg" alt="${esc(t("heroArtAlt"))}" width="848" height="478"/>
+    <video class="hv-video" muted playsinline preload="none" poster="/assets/astronaut-poster.jpg" aria-hidden="true" tabindex="-1"></video>
+    <span class="hv-ring" aria-hidden="true"></span>
+  </div>`;
+}
+function mountHeroVideo(root) {
+  const box = root.querySelector(".hero-video");
+  const v = box?.querySelector("video");
+  if (!v) return () => {};
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const small = matchMedia("(max-width: 680px)").matches;
+  const saveData = navigator.connection?.saveData;
+  if (reduce || small || saveData) return () => {};
+  let stopped = false;
+  v.src = "/assets/astronaut.mp4#t=" + HERO_LOOP.start;
+  v.preload = "auto";
+  const onMeta = () => { v.currentTime = HERO_LOOP.start; v.play().catch(() => {}); };
+  const onPlaying = () => box.classList.add("playing");
+  const onTime = () => {
+    if (stopped) return;
+    if (v.currentTime >= HERO_LOOP.end - 0.6) box.classList.add("fading");
+    if (v.currentTime >= HERO_LOOP.end) {
+      v.currentTime = HERO_LOOP.start;
+      setTimeout(() => box.classList.remove("fading"), 120);
+    }
+  };
+  const onVis = () => { if (document.hidden) v.pause(); else if (!stopped) v.play().catch(() => {}); };
+  v.addEventListener("loadedmetadata", onMeta, { once: true });
+  v.addEventListener("playing", onPlaying);
+  v.addEventListener("timeupdate", onTime);
+  document.addEventListener("visibilitychange", onVis);
+  return () => {
+    stopped = true;
+    v.pause();
+    v.removeAttribute("src");
+    v.load();
+    document.removeEventListener("visibilitychange", onVis);
+  };
+}
+
 async function pageHome() {
   const [s, blocks, txs, charts] = await Promise.all([api("stats"), api("blocks?limit=10"), api("txs?limit=10"), api("charts?days=30").catch(() => [])]);
   document.title = `LunariumCoin Explorer — ${t("tagline")}`;
@@ -223,7 +269,7 @@ async function pageHome() {
         <form class="search big" data-search role="search"><input type="search" name="q" placeholder="${esc(t("searchPlaceholder"))}" autocomplete="off" spellcheck="false"/><button type="submit">${icons.arrow}<span>${t("search")}</span></button></form>
         <div class="hero-hints"><span>${t("hintBlock")}</span><span>${t("hintTx")}</span><span>${t("hintAddress")}</span></div>
       </div>
-      <div class="hero-art">${planetsSvg()}${astronautSvg()}</div>
+      <div class="hero-art">${heroVideoHtml()}</div>
     </section>
     <div id="statsBox">${statTiles(s)}</div>
     ${auditBanner(s)}
@@ -237,7 +283,9 @@ async function pageHome() {
     ${visitorsHtml()}
   </div>`;
   wireCharts(app);
-  pageCleanup = mountVisitors(app);
+  const stopVisitors = mountVisitors(app);
+  const stopVideo = mountHeroVideo(app);
+  pageCleanup = () => { stopVisitors(); stopVideo(); };
   liveHandler = (ev) => {
     const box = $("#statsBox");
     if (box) box.innerHTML = statTiles(ev.stats);
@@ -607,7 +655,7 @@ const ROUTES = [
   [/^\/(api-docs|info)\/?$/, pageApi, "api"],
   [/^\/claim\/?$/, pageClaim, "claim"],
 ];
-const NAV = [["/", "home"], ["/blocks", "blocks"], ["/masternodes", "masternodes"], ["/richlist", "richlist"], ["/network", "network"], ["/movement", "movement"], ["/supply", "supply"], ["/charts", "charts"], ["/claim", "claim"], ["/api-docs", "api"]];
+const NAV = [["/blocks", "blocks"], ["/masternodes", "masternodes"], ["/richlist", "richlist"], ["/network", "network"], ["/movement", "movement"], ["/supply", "supply"], ["/charts", "charts"], ["/claim", "claim"], ["/api-docs", "api"]];
 
 async function render() {
   liveHandler = null;
