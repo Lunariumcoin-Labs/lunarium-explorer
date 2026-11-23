@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "هذا الاسم المستعار يخص عنوانًا آخر.",
   claimErr_address_unused: "لا توجد لهذا العنوان معاملات على الشبكة بعد.",
   claimErr_signature_invalid: "التوقيع لا يطابق هذا العنوان وهذا الاسم. وقّع النص نفسه تمامًا.",
+  peerOne: "عقدة",
 };

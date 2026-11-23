@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "הכינוי הזה כבר שייך לכתובת אחרת.",
   claimErr_address_unused: "לכתובת הזו עדיין אין עסקאות ברשת.",
   claimErr_signature_invalid: "החתימה אינה תואמת לכתובת ולכינוי האלה. חתמו בדיוק על אותו טקסט.",
+  peerOne: "צומת",
 };

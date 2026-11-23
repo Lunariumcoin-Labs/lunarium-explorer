@@ -1,6 +1,7 @@
 // Visitantes do explorador: registro da visita (sem cookies; só um id de sessão no sessionStorage),
 // faixa "Pulso da comunidade" e o globo de pontos com os países (adaptado do globo do lunariumcoin.com).
 import { t, intlTag } from "./i18n.js";
+import { countryFlag } from "./flags.js";
 
 const API = "/api/v1/visits";
 let sid = null;
@@ -32,7 +33,7 @@ const regionName = (cc) => {
   try { return new Intl.DisplayNames([intlTag().split("-u-")[0]], { type: "region" }).of(cc) || cc; } catch { return cc; }
 };
 const nf = (n) => new Intl.NumberFormat(intlTag()).format(n || 0);
-const flag = (cc) => (/^[A-Z]{2}$/.test(cc) ? String.fromCodePoint(...[...cc].map((c) => 0x1f1a5 + c.charCodeAt(0))) : "🌐");
+const flag = (cc) => countryFlag(cc);
 
 export function visitorsHtml() {
   return `

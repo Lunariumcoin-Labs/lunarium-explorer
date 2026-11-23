@@ -3,7 +3,7 @@
 import { startSpace } from "./space.js";
 import { astronautSvg, planetsSvg, icons } from "./art.js";
 import { t, setLang, lang, intlTag, LANGS, initLang } from "./i18n.js";
-import { flagOf } from "./flags.js";
+import { flagOf, countryFlag } from "./flags.js";
 import qrcode from "./qrcode.mjs";
 import { startVisits, trackView, visitorsHtml, mountVisitors } from "./visitors.js";
 
@@ -64,7 +64,8 @@ const dur = (sec) => {
   const d = Math.floor(sec / 86400), h = Math.floor((sec % 86400) / 3600), m = Math.floor((sec % 3600) / 60);
   return d ? `${d}${t("unitD")} ${h}${t("unitH")}` : h ? `${h}${t("unitH")} ${m}${t("unitM")}` : `${m}${t("unitM")}`;
 };
-const flag = (cc) => (cc && /^[A-Z]{2}$/.test(cc) ? String.fromCodePoint(...[...cc].map((c) => 0x1f1a5 + c.charCodeAt(0))) : "🌐");
+const flag = (cc) => countryFlag(cc);
+const regionName = (cc) => { try { return new Intl.DisplayNames([intlTag().split("-u-")[0]], { type: "region" }).of(cc) || cc; } catch { return cc; } };
 const kindPill = (k) => ({ coinstake: `<span class="pill stake">${t("kStake")}</span>`, coinbase: `<span class="pill coinbase">${t("kCoinbase")}</span>` }[k] || `<span class="pill">${t("kTransfer")}</span>`);
 const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}" title="${esc(t("copy"))}" aria-label="${esc(t("copy"))}">${icons.copy}</button>`;
 // Apelidos (alias): carregados uma vez e atualizados depois de um registro.
@@ -437,11 +438,11 @@ async function pageNetwork() {
       <div class="stat"><div class="label">${icons.cube}${t("sHeight")}</div><div class="value">${nf(s.height, 0)}</div></div>
     </div>
     <section class="card"><div class="card-head"><h2>${icons.layers}${t("versions")}</h2></div>
-      ${vlist.map(([v, n]) => `<div class="dist-row"><div class="hash" title="${esc(v)}">${esc(v.replace("LunariumCoin Core:", "v"))}</div><div class="dist-bar"><span style="width:${(n / maxV) * 100}%"></span></div><div class="num">${n} ${t("peers")}</div></div>`).join("")}
+      ${vlist.map(([v, n]) => `<div class="dist-row"><div class="hash" title="${esc(v)}">${esc(v.replace("LunariumCoin Core:", "v"))}</div><div class="dist-bar"><span style="width:${(n / maxV) * 100}%"></span></div><div class="num">${n} ${t(n === 1 ? "peerOne" : "peers")}</div></div>`).join("")}
       <div style="height:10px"></div></section>
     <section class="card" style="margin-top:18px"><div class="card-head"><h2>${icons.globe}${t("connectedPeers")}</h2></div>
       <div class="table-wrap"><table><thead><tr><th>${t("node")}</th><th class="hide-sm">${t("country")}</th><th>${t("version")}</th><th class="num hide-sm">${t("protocol")}</th><th class="num">${t("height")}</th><th class="num hide-sm">Ping</th></tr></thead><tbody>
-      ${p.list.map((x) => `<tr><td class="hash">${esc(x.ip)}</td><td class="hide-sm">${flag(x.country_code)} ${esc(x.country || "—")}</td><td>${esc((x.subver || "").replace(/^\/|\/$/g, ""))}</td><td class="num hide-sm">${x.version}</td><td class="num">${x.synced_blocks ? nf(x.synced_blocks, 0) : nf(x.startingheight, 0)}</td><td class="num hide-sm">${x.pingtime ? nf(x.pingtime * 1000, 0) + " ms" : "—"}</td></tr>`).join("")}
+      ${p.list.map((x) => `<tr><td class="hash">${esc(x.ip)}</td><td class="hide-sm">${flag(x.country_code)} ${esc(x.country_code ? regionName(x.country_code) : x.country || "—")}</td><td>${esc((x.subver || "").replace(/^\/|\/$/g, ""))}</td><td class="num hide-sm">${x.version}</td><td class="num">${x.synced_blocks > 0 ? nf(x.synced_blocks, 0) : x.startingheight > 0 ? nf(x.startingheight, 0) : "—"}</td><td class="num hide-sm">${x.pingtime ? nf(x.pingtime * 1000, 0) + " ms" : "—"}</td></tr>`).join("")}
       </tbody></table></div></section></div>`;
 }
 

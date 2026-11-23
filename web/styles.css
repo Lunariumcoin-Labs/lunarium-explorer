@@ -408,3 +408,9 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
   .lang-btn span { display: none; }
   .lang-btn { padding: 8px 10px; }
 }
+
+/* bandeiras em imagem (flag-icons) */
+img.flag, .flag-none { display: inline-block; width: 22px; height: 16px; border-radius: 3px; vertical-align: -3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18); background: rgba(255, 255, 255, .06); }
+.flag-none { box-shadow: none; background: none; font-size: 14px; line-height: 16px; text-align: center; }
+.gl-flag { display: inline-flex; align-items: center; }
+td img.flag { margin-inline-end: 6px; }

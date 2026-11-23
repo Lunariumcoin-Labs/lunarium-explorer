@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "यह उपनाम पहले से किसी दूसरे पते का है।",
   claimErr_address_unused: "इस पते का नेटवर्क पर अभी कोई लेन-देन नहीं है।",
   claimErr_signature_invalid: "हस्ताक्षर इस पते और उपनाम से मेल नहीं खाता। बिल्कुल वही टेक्स्ट हस्ताक्षरित करें।",
+  peerOne: "नोड",
 };

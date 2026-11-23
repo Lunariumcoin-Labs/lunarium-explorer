@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "Esse apelido já pertence a outro endereço.",
   claimErr_address_unused: "Esse endereço ainda não tem nenhuma transação na rede.",
   claimErr_signature_invalid: "A assinatura não confere com este endereço e este apelido. Assine exatamente o mesmo texto.",
+  peerOne: "nó",
 };

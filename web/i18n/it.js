@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "Questo alias appartiene già a un altro indirizzo.",
   claimErr_address_unused: "Questo indirizzo non ha ancora transazioni sulla rete.",
   claimErr_signature_invalid: "La firma non corrisponde a questo indirizzo e a questo alias. Firma esattamente lo stesso testo.",
+  peerOne: "nodo",
 };

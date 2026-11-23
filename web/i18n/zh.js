@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "该别名已属于另一个地址。",
   claimErr_address_unused: "该地址在网络上还没有任何交易。",
   claimErr_signature_invalid: "签名与此地址和别名不匹配。请对完全相同的文本签名。",
+  peerOne: "个节点",
 };

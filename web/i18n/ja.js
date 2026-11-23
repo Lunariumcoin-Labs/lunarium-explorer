@@ -95,4 +95,5 @@ export default {
   claimErr_name_taken: "そのエイリアスは別のアドレスが使用しています。",
   claimErr_address_unused: "このアドレスにはまだネットワーク上の取引がありません。",
   claimErr_signature_invalid: "署名がこのアドレスとエイリアスに一致しません。まったく同じテキストに署名してください。",
+  peerOne: "ノード",
 };
