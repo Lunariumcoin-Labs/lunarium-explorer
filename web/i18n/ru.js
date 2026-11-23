@@ -60,4 +60,5 @@ export default {
   footerTag: "Официальный обозреватель блокчейна XLN", footerNote: "Данные читаются напрямую с собственного узла LunariumCoin. Код и эмиссию можно проверить.",
   fExplore: "Обзор", fNetwork: "Сеть",
   unitD: "д", unitH: "ч", unitM: "мин",
+  visLive: "В ЭФИРЕ", visTitle: "Пульс сообщества", visPrivacy: "Без cookies и без хранения IP", visTotal: "всего посетителей", vis7d: "Посетители за 7 дней", visOnline: "сейчас онлайн", visToday: "сегодня", glLabel: "Глобальный охват", glTitle: "Посетители со всего мира", glCountries: "стран", glHint: "Потяните, чтобы вращать", glRank: "Рейтинг стран", glWait: "Собираем данные о посетителях…", glLive: "Активность в реальном времени",
 };

@@ -60,4 +60,5 @@ export default {
   footerTag: "Official explorer of the XLN blockchain", footerNote: "Data read directly from our own LunariumCoin node. Auditable code and issuance.",
   fExplore: "Explore", fNetwork: "Network",
   unitD: "d", unitH: "h", unitM: "min",
+  visLive: "LIVE", visTitle: "Community pulse", visPrivacy: "No cookies, no IPs stored", visTotal: "total visitors", vis7d: "Visitors in the last 7 days", visOnline: "online now", visToday: "today", glLabel: "Global reach", glTitle: "Visitors around the world", glCountries: "countries", glHint: "Drag to rotate", glRank: "Top countries", glWait: "Collecting visitor locations…", glLive: "Live activity",
 };

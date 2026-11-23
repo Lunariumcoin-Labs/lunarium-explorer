@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const web = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "web");
 const LANGS = ["pt", "en", "es", "ar", "zh", "ru", "ja", "he", "hi", "it"];
-const src = fs.readFileSync(path.join(web, "app.js"), "utf8");
+const src = ["app.js", "visitors.js"].map((f) => fs.readFileSync(path.join(web, f), "utf8")).join(" ");
 const used = new Set([...src.matchAll(/\bt\("([A-Za-z0-9_]+)"/g)].map((m) => m[1]).filter((k) => !k.endsWith("_")));
 for (const k of ["home", "blocks", "masternodes", "richlist", "network", "movement", "supply", "charts", "api"]) used.add("nav_" + k);
 

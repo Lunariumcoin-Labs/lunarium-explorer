@@ -60,4 +60,5 @@ export default {
   footerTag: "XLN 区块链官方浏览器", footerNote: "数据直接读取自我们自己的 LunariumCoin 节点。代码和发行均可审计。",
   fExplore: "浏览", fNetwork: "网络",
   unitD: "天", unitH: "小时", unitM: "分",
+  visLive: "实时", visTitle: "社区脉搏", visPrivacy: "不使用 Cookie，不保存 IP", visTotal: "访客总数", vis7d: "最近 7 天访客", visOnline: "当前在线", visToday: "今日", glLabel: "全球覆盖", glTitle: "来自世界各地的访客", glCountries: "个国家", glHint: "拖动旋转", glRank: "国家排名", glWait: "正在收集访客位置…", glLive: "实时动态",
 };

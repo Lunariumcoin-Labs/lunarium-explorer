@@ -60,4 +60,5 @@ export default {
   footerTag: "المستكشف الرسمي لبلوكتشين XLN", footerNote: "البيانات تُقرأ مباشرة من عقدة LunariumCoin خاصة بنا. الكود والإصدار قابلان للتدقيق.",
   fExplore: "استكشاف", fNetwork: "الشبكة",
   unitD: "ي", unitH: "س", unitM: "د",
+  visLive: "مباشر", visTitle: "نبض المجتمع", visPrivacy: "بلا ملفات تعريف ارتباط وبلا حفظ عناوين IP", visTotal: "إجمالي الزوار", vis7d: "الزوار في آخر 7 أيام", visOnline: "متصل الآن", visToday: "اليوم", glLabel: "انتشار عالمي", glTitle: "زوار من حول العالم", glCountries: "دولة", glHint: "اسحب للتدوير", glRank: "ترتيب الدول", glWait: "جارٍ جمع مواقع الزوار…", glLive: "النشاط المباشر",
 };

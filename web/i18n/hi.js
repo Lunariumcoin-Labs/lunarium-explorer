@@ -60,4 +60,5 @@ export default {
   footerTag: "XLN ब्लॉकचेन का आधिकारिक एक्सप्लोरर", footerNote: "डेटा सीधे हमारे अपने LunariumCoin नोड से पढ़ा जाता है। कोड और जारी सिक्के ऑडिट योग्य हैं।",
   fExplore: "एक्सप्लोर करें", fNetwork: "नेटवर्क",
   unitD: "दि", unitH: "घं", unitM: "मि",
+  visLive: "लाइव", visTitle: "समुदाय की धड़कन", visPrivacy: "न कुकी, न IP सहेजा जाता है", visTotal: "कुल आगंतुक", vis7d: "पिछले 7 दिनों के आगंतुक", visOnline: "अभी ऑनलाइन", visToday: "आज", glLabel: "वैश्विक पहुँच", glTitle: "दुनिया भर के आगंतुक", glCountries: "देश", glHint: "घुमाने के लिए खींचें", glRank: "देशों की रैंकिंग", glWait: "आगंतुकों के स्थान इकट्ठे हो रहे हैं…", glLive: "लाइव गतिविधि",
 };

@@ -4,6 +4,7 @@ import { startSpace } from "./space.js";
 import { astronautSvg, planetsSvg, icons } from "./art.js";
 import { t, setLang, lang, intlTag, LANGS, initLang } from "./i18n.js";
 import qrcode from "./qrcode.mjs";
+import { startVisits, trackView, visitorsHtml, mountVisitors } from "./visitors.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const app = $("#app");
@@ -152,6 +153,8 @@ function qrSvg(text) {
 
 // ---------------- páginas ----------------
 let liveHandler = null; // a página atual recebe os eventos de bloco novo por aqui
+let pageCleanup = null; // desliga animações/timers da página ao sair dela
+let firstRender = true;
 
 function statTiles(s) {
   const p = s.price;
@@ -220,8 +223,10 @@ async function pageHome() {
     </div>
     <section class="card" style="margin-top:18px"><div class="card-head"><h2>${icons.chart}${t("txPerDay")}</h2><a class="more" href="/charts" data-link>${t("allCharts")} ${icons.arrow}</a></div>
       ${lineChart(charts, { y: (r) => r.txs, label: t("txPerDay"), fmt: (v) => nf(v, 0) + " " + t("txs") })}</section>
+    ${visitorsHtml()}
   </div>`;
   wireCharts(app);
+  pageCleanup = mountVisitors(app);
   liveHandler = (ev) => {
     const box = $("#statsBox");
     if (box) box.innerHTML = statTiles(ev.stats);
@@ -539,6 +544,9 @@ const NAV = [["/", "home"], ["/blocks", "blocks"], ["/masternodes", "masternodes
 
 async function render() {
   liveHandler = null;
+  if (pageCleanup) { try { pageCleanup(); } catch {} pageCleanup = null; }
+  if (!firstRender) trackView();
+  firstRender = false;
   const url = new URL(location.href);
   const path = url.pathname;
   let route = ROUTES.find(([re]) => re.test(path));
@@ -614,6 +622,7 @@ function connectStream() {
 }
 
 initLang();
+startVisits();
 startSpace($("#space"));
 chrome();
 render();

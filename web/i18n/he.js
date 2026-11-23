@@ -60,4 +60,5 @@ export default {
   footerTag: "הסייר הרשמי של בלוקצ'יין XLN", footerNote: "הנתונים נקראים ישירות מצומת LunariumCoin משלנו. הקוד וההנפקה ניתנים לביקורת.",
   fExplore: "גלישה", fNetwork: "רשת",
   unitD: "ימ׳", unitH: "שע׳", unitM: "דק׳",
+  visLive: "חי", visTitle: "הדופק של הקהילה", visPrivacy: "בלי עוגיות ובלי שמירת IP", visTotal: "סה״כ מבקרים", vis7d: "מבקרים ב-7 הימים האחרונים", visOnline: "מחוברים עכשיו", visToday: "היום", glLabel: "פריסה עולמית", glTitle: "מבקרים מכל העולם", glCountries: "מדינות", glHint: "גררו כדי לסובב", glRank: "דירוג מדינות", glWait: "אוספים את מיקומי המבקרים…", glLive: "פעילות חיה",
 };

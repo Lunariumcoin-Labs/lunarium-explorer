@@ -60,4 +60,5 @@ export default {
   footerTag: "XLN ブロックチェーン公式エクスプローラー", footerNote: "データは自前の LunariumCoin ノードから直接取得しています。コードと発行は監査可能です。",
   fExplore: "探索", fNetwork: "ネットワーク",
   unitD: "日", unitH: "時間", unitM: "分",
+  visLive: "ライブ", visTitle: "コミュニティの鼓動", visPrivacy: "Cookie なし・IP は保存しません", visTotal: "累計訪問者", vis7d: "直近 7 日間の訪問者", visOnline: "現在オンライン", visToday: "今日", glLabel: "グローバル", glTitle: "世界中からの訪問者", glCountries: "か国", glHint: "ドラッグで回転", glRank: "国別ランキング", glWait: "訪問者の位置を集計中…", glLive: "リアルタイムの動き",
 };

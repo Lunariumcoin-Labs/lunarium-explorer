@@ -9,6 +9,7 @@ import { createRpc } from "./rpc.mjs";
 import { createLive } from "./live.mjs";
 import { createApi, HttpError } from "./api.mjs";
 import { createCompat } from "./compat.mjs";
+import { createVisits } from "./visits.mjs";
 
 const log = (m) => console.log(`[${new Date().toISOString()}] ${m}`);
 
@@ -17,6 +18,17 @@ const rpc = createRpc(config.rpc);
 const live = createLive({ db, rpc, priceUrl: config.priceUrl, log });
 const api = createApi({ db, rpc, live });
 const compat = createCompat({ db, rpc, live, api });
+const visits = createVisits({ db, log });
+
+function readBody(req, max = 2048) {
+  return new Promise((resolve) => {
+    let size = 0;
+    const chunks = [];
+    req.on("data", (c) => { size += c.length; if (size > max) { req.destroy(); resolve(""); } else chunks.push(c); });
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", () => resolve(""));
+  });
+}
 
 // ---------- arquivos do site ----------
 const MIME = {
@@ -157,6 +169,15 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "OPTIONS") {
       res.writeHead(204, { "access-control-allow-origin": "*", "access-control-allow-methods": "GET, HEAD", "access-control-max-age": "86400" });
       return res.end();
+    }
+    if (pathname === "/api/v1/visits") {
+      let p = url.searchParams;
+      if (req.method === "POST") {
+        const raw = await readBody(req);
+        try { p = raw.trim().startsWith("{") ? new URLSearchParams(JSON.parse(raw)) : new URLSearchParams(raw); } catch { p = new URLSearchParams(); }
+      }
+      const out = await visits.handle({ a: p.get("a") || "read", sid: p.get("sid"), isNew: p.get("new") === "1", ip: clientIp(req), ua: req.headers["user-agent"] || "" });
+      return sendJson(res, 200, out, "no-store");
     }
     if (req.method !== "GET" && req.method !== "HEAD") return sendText(res, 405, "method not allowed");
 

@@ -312,3 +312,59 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
   .audit-banner a { margin-inline-start: 0; }
 }
 .muted code, .card-pad code { font-family: var(--mono); font-size: .9em; background: rgba(50, 185, 214, .1); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--cyan-2); }
+
+/* ---------- visitantes (pulso da comunidade + globo) ---------- */
+.vis-strip { margin-top: 18px; padding: 18px 22px; }
+.vis-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.vis-live { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; letter-spacing: .2em; color: var(--green); }
+.vis-title { font-weight: 800; letter-spacing: .08em; text-transform: uppercase; font-size: 14px; }
+.vis-priv { margin-inline-start: auto; font-size: 12px; }
+.vis-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 14px; }
+.vis-cell { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); min-width: 0; }
+.vis-ico { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; background: rgba(50, 185, 214, .12); color: var(--cyan-2); flex: none; }
+.vis-ico svg { width: 22px; height: 22px; }
+.vis-ico.green { background: rgba(91, 237, 145, .12); color: var(--green); }
+.vis-ico.gold { background: rgba(243, 183, 71, .12); color: var(--gold); }
+.vis-txt { display: flex; flex-direction: column; min-width: 0; }
+.vis-txt b { font: 800 24px/1.1 var(--sans); font-variant-numeric: tabular-nums; }
+.vis-txt span { color: var(--muted); font-size: 12.5px; }
+.vis-big #vSpark { flex: 1 1 auto; height: 40px; min-width: 60px; margin-inline-start: auto; max-width: 220px; }
+
+.gl-card { margin-top: 18px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 10px; padding: 22px; overflow: hidden; }
+.gl-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.gl-title { font: 800 clamp(22px, 2.6vw, 30px)/1.15 var(--display); margin: 10px 0 0; }
+.gl-kpi { text-align: end; }
+.gl-kpi b { display: block; font: 800 34px/1 var(--sans); color: var(--cyan-2); }
+.gl-kpi span { color: var(--muted); font-size: 12.5px; }
+.gl-stage { position: relative; max-width: 520px; margin: 4px auto 0; }
+.gl-stage canvas { display: block; width: 100%; cursor: grab; touch-action: none; }
+.gl-stage canvas:active { cursor: grabbing; }
+.gl-hint { text-align: center; color: var(--soft); font-size: 12px; margin-top: -6px; }
+.gl-right { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.gl-h3 { display: flex; align-items: center; gap: 8px; margin: 6px 0 4px; font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.gl-rank { display: flex; flex-direction: column; gap: 4px; }
+.gl-row { display: grid; grid-template-columns: 18px 24px minmax(0, 1fr) 70px 78px; align-items: center; gap: 8px; width: 100%; background: transparent; border: 1px solid transparent; border-radius: 10px; padding: 7px 8px; color: var(--text); font: inherit; font-size: 13.5px; cursor: pointer; text-align: start; }
+.gl-row:hover { background: rgba(50, 185, 214, .08); border-color: var(--line); }
+.gl-n { color: var(--soft); font-size: 12px; }
+.gl-flag { font-size: 17px; line-height: 1; }
+.gl-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gl-bar { height: 6px; border-radius: 4px; background: rgba(130, 180, 255, .1); overflow: hidden; }
+.gl-bar i { display: block; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--chart-1), var(--cyan-2)); }
+.gl-val { text-align: end; font-variant-numeric: tabular-nums; font-weight: 700; }
+.gl-val em { font-style: normal; color: var(--soft); font-weight: 500; font-size: 11.5px; margin-inline-start: 5px; }
+.gl-feed { display: flex; flex-direction: column; gap: 4px; }
+.gl-ev { display: grid; grid-template-columns: 10px 24px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; background: rgba(255, 255, 255, .025); font-size: 13px; }
+.gl-evdot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px rgba(243, 183, 71, .7); }
+.gl-evn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gl-evt { color: var(--soft); font-size: 12px; font-variant-numeric: tabular-nums; }
+@media (max-width: 1040px) {
+  .gl-card { grid-template-columns: minmax(0, 1fr); }
+  .vis-grid { grid-template-columns: 1fr 1fr; }
+  .vis-big { grid-column: 1 / -1; }
+}
+@media (max-width: 680px) {
+  .vis-priv { margin-inline-start: 0; width: 100%; }
+  .vis-txt b { font-size: 20px; }
+  .gl-row { grid-template-columns: 16px 22px minmax(0, 1fr) 70px; }
+  .gl-row .gl-bar { display: none; }
+}
