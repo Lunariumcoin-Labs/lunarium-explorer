@@ -73,6 +73,11 @@ export function createLive({ db, rpc, priceUrl, log = console.log }) {
         setMeta(db, "peer_geo", JSON.stringify(Object.fromEntries([...geo].slice(-2000))));
       } catch (e) { log(`geo dos peers indisponível: ${e.message}`); }
     }
+    // Infraestrutura da Lunarium (VPS da hospedagem/explorador) não aparece na lista pública: qualquer peer
+    // conectado por nome (addnode=host) e os IPs de EXPLORER_HIDE_PEERS.
+    const hidden = new Set(String(process.env.EXPLORER_HIDE_PEERS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean));
+    const isIp = (h) => /^[0-9.]+$/.test(h || "") || (h || "").includes(":");
+    peers = peers.filter((p) => { const h = hostOf(p.addr); return h && isIp(h) && !hidden.has(h.toLowerCase()); });
     state.peers = peers.map((p) => {
       const ip = hostOf(p.addr);
       const g = geo.get(ip) || null;

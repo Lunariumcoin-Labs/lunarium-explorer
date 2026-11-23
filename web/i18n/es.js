@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "La firma no coincide con esta dirección y este alias. Firma exactamente el mismo texto.",
   peerOne: "nodo",
   heroArtAlt: "Astronauta de Lunarium frente al logo, con el código reflejado en el casco",
+  tabConnections: "Conexiones",
+  tabSeeds: "Agregar nodos (seeds)",
+  copyAll: "Copiar todo",
+  seedsConfTitle: "Líneas para lunariumcoin.conf",
+  seedsConfHelp: "Si tu cartera no sincroniza, agrega estas líneas al archivo lunariumcoin.conf (cartera Qt: Herramientas → Abrir archivo de configuración) y reinicia la cartera.",
+  seedsConsoleTitle: "Líneas para la consola de la cartera",
+  seedsConsoleHelp: "O pega estas líneas, una por una, en la consola de la cartera (V5 o Qt) o úsalas con lunariumcoin-cli; no hace falta reiniciar.",
 };

@@ -24,8 +24,11 @@ export function createCompat({ db, rpc, live, api, aliases }) {
         CAST(SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.sent - at.received, 0) ELSE at.sent END) AS TEXT) AS snt
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ?`),
     lastTxs: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ? ORDER BY t.height DESC, t.idx DESC LIMIT ? OFFSET ?`),
-    lastTxsMin: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ? AND t.value_out >= ? ORDER BY t.height DESC, t.idx DESC LIMIT ? OFFSET ?`),
-    mnRewards: q(`SELECT b.height, b.hash, b.time, b.mn_amount, t.id, t.txid FROM blocks b JOIN txs t ON t.height = b.height AND t.kind IN ('coinstake', 'coinbase')
+    // valor mínimo como o eIquidus: transferência pelo total enviado; stake/coinbase pelo que o bloco criou (líquido)
+    lastTxsMin: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ?1
+      AND ((t.kind = 'normal' AND t.value_out >= ?2) OR (t.kind <> 'normal' AND t.value_out - t.value_in >= ?2))
+      ORDER BY t.height DESC, t.idx DESC LIMIT ?3 OFFSET ?4`),
+    mnRewards: q(`SELECT b.height, b.hash, b.time, b.mn_amount, t.id, t.txid FROM blocks b JOIN txs t ON t.height = b.height AND t.kind = (CASE b.kind WHEN 'pos' THEN 'coinstake' ELSE 'coinbase' END)
       WHERE b.mn_payee = ? AND b.height >= ? ORDER BY b.height`),
     mnRewardsTotal: q("SELECT COALESCE(SUM(mn_amount), 0) AS s FROM blocks WHERE mn_payee = ? AND height >= ?"),
   };

@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "The signature does not match this address and this alias. Sign exactly the same text.",
   peerOne: "node",
   heroArtAlt: "Lunarium astronaut facing the logo, with code reflected on the helmet",
+  tabConnections: "Connections",
+  tabSeeds: "Add nodes (seeds)",
+  copyAll: "Copy all",
+  seedsConfTitle: "Lines for lunariumcoin.conf",
+  seedsConfHelp: "If your wallet does not sync, add these lines to the lunariumcoin.conf file (Qt wallet: Tools → Open configuration file) and restart the wallet.",
+  seedsConsoleTitle: "Lines for the wallet console",
+  seedsConsoleHelp: "Or paste these lines, one at a time, into the wallet console (V5 or Qt) or use them with lunariumcoin-cli — no restart needed.",
 };

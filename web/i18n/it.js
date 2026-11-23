@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "La firma non corrisponde a questo indirizzo e a questo alias. Firma esattamente lo stesso testo.",
   peerOne: "nodo",
   heroArtAlt: "Astronauta Lunarium davanti al logo, con il codice riflesso sul casco",
+  tabConnections: "Connessioni",
+  tabSeeds: "Aggiungi nodi (seed)",
+  copyAll: "Copia tutto",
+  seedsConfTitle: "Righe per lunariumcoin.conf",
+  seedsConfHelp: "Se il wallet non si sincronizza, aggiungi queste righe al file lunariumcoin.conf (wallet Qt: Strumenti → Apri file di configurazione) e riavvia il wallet.",
+  seedsConsoleTitle: "Righe per la console del wallet",
+  seedsConsoleHelp: "Oppure incolla queste righe, una alla volta, nella console del wallet (V5 o Qt) o usale con lunariumcoin-cli: non serve riavviare.",
 };

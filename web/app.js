@@ -488,10 +488,31 @@ async function pageNetwork() {
     <section class="card"><div class="card-head"><h2>${icons.layers}${t("versions")}</h2></div>
       ${vlist.map(([v, n]) => `<div class="dist-row"><div class="hash" title="${esc(v)}">${esc(v.replace("LunariumCoin Core:", "v"))}</div><div class="dist-bar"><span style="width:${(n / maxV) * 100}%"></span></div><div class="num">${n} ${t(n === 1 ? "peerOne" : "peers")}</div></div>`).join("")}
       <div style="height:10px"></div></section>
-    <section class="card" style="margin-top:18px"><div class="card-head"><h2>${icons.globe}${t("connectedPeers")}</h2></div>
-      <div class="table-wrap"><table><thead><tr><th>${t("node")}</th><th class="hide-sm">${t("country")}</th><th>${t("version")}</th><th class="num hide-sm">${t("protocol")}</th><th class="num">${t("height")}</th><th class="num hide-sm">Ping</th></tr></thead><tbody>
+    <section class="card" style="margin-top:18px"><div class="card-head"><h2>${icons.globe}${t("connectedPeers")}</h2>
+      <div class="seg" role="tablist"><button data-pane-btn="peers" class="on" role="tab">${t("tabConnections")}</button><button data-pane-btn="seeds" role="tab">${t("tabSeeds")}</button></div></div>
+      <div data-pane="peers"><div class="table-wrap"><table><thead><tr><th>${t("node")}</th><th class="hide-sm">${t("country")}</th><th>${t("version")}</th><th class="num hide-sm">${t("protocol")}</th><th class="num">${t("height")}</th><th class="num hide-sm">Ping</th></tr></thead><tbody>
       ${p.list.map((x) => `<tr><td class="hash">${esc(x.ip)}</td><td class="hide-sm">${flag(x.country_code)} ${esc(x.country_code ? regionName(x.country_code) : x.country || "—")}</td><td>${esc((x.subver || "").replace(/^\/|\/$/g, ""))}</td><td class="num hide-sm">${x.version}</td><td class="num">${x.synced_blocks > 0 ? nf(x.synced_blocks, 0) : x.startingheight > 0 ? nf(x.startingheight, 0) : "—"}</td><td class="num hide-sm">${x.pingtime ? nf(x.pingtime * 1000, 0) + " ms" : "—"}</td></tr>`).join("")}
-      </tbody></table></div></section></div>`;
+      </tbody></table></div></div>
+      <div data-pane="seeds" hidden>${seedsHtml(p.list, s.height)}</div></section></div>`;
+  app.querySelectorAll("[data-pane-btn]").forEach((b) => b.addEventListener("click", () => {
+    app.querySelectorAll("[data-pane-btn]").forEach((x) => x.classList.toggle("on", x === b));
+    app.querySelectorAll("[data-pane]").forEach((x) => { x.hidden = x.dataset.pane !== b.dataset.paneBtn; });
+  }));
+}
+
+// Seeds: nós da versão atual (4.x) que estão na ponta da rede, prontos para o .conf e para o console da carteira.
+function seedsHtml(list, tip) {
+  const good = list.filter((x) => /Core:4\./.test(x.subver || "") && ((x.synced_blocks > 0 && x.synced_blocks >= tip - 100) || (!(x.synced_blocks > 0) && x.startingheight >= tip - 1440)));
+  const hostPort = (x) => (x.ip.includes(":") ? `[${x.ip}]` : x.ip) + ":13990";
+  const conf = good.map((x) => `addnode=${hostPort(x)}`).join("\n");
+  const onetry = good.map((x) => `addnode ${hostPort(x)} onetry`).join("\n");
+  if (!good.length) return `<div class="card-pad soft">${t("noData")}</div>`;
+  return `<div class="card-pad seeds">
+    <h3>${t("seedsConfTitle")}</h3><p class="muted">${t("seedsConfHelp")}</p>
+    <div class="code">${esc(conf)}</div><button class="btn btn-sm" data-copy="${esc(conf)}">${icons.copy} ${t("copyAll")}</button>
+    <h3>${t("seedsConsoleTitle")}</h3><p class="muted">${t("seedsConsoleHelp")}</p>
+    <div class="code">${esc(onetry)}</div><button class="btn btn-sm" data-copy="${esc(onetry)}">${icons.copy} ${t("copyAll")}</button>
+  </div>`;
 }
 
 async function pageMovement(_, query) {

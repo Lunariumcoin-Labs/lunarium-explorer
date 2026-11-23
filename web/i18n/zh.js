@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "签名与此地址和别名不匹配。请对完全相同的文本签名。",
   peerOne: "个节点",
   heroArtAlt: "Lunarium 宇航员面对标志，头盔上映出代码",
+  tabConnections: "连接",
+  tabSeeds: "添加节点（种子）",
+  copyAll: "全部复制",
+  seedsConfTitle: "lunariumcoin.conf 配置行",
+  seedsConfHelp: "如果钱包无法同步，请把这些行加入 lunariumcoin.conf 文件（Qt 钱包：工具 → 打开配置文件），然后重启钱包。",
+  seedsConsoleTitle: "钱包控制台命令",
+  seedsConsoleHelp: "也可以把这些行逐条粘贴到钱包控制台（V5 或 Qt），或用 lunariumcoin-cli 执行，无需重启。",
 };

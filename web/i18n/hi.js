@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "हस्ताक्षर इस पते और उपनाम से मेल नहीं खाता। बिल्कुल वही टेक्स्ट हस्ताक्षरित करें।",
   peerOne: "नोड",
   heroArtAlt: "लोगो के सामने Lunarium अंतरिक्ष यात्री, हेलमेट पर कोड का प्रतिबिंब",
+  tabConnections: "कनेक्शन",
+  tabSeeds: "नोड जोड़ें (सीड)",
+  copyAll: "सब कॉपी करें",
+  seedsConfTitle: "lunariumcoin.conf के लिए पंक्तियाँ",
+  seedsConfHelp: "अगर आपका वॉलेट सिंक नहीं होता, तो ये पंक्तियाँ lunariumcoin.conf फ़ाइल में जोड़ें (Qt वॉलेट: टूल्स → कॉन्फ़िगरेशन फ़ाइल खोलें) और वॉलेट दोबारा शुरू करें।",
+  seedsConsoleTitle: "वॉलेट कंसोल के लिए पंक्तियाँ",
+  seedsConsoleHelp: "या ये पंक्तियाँ एक-एक करके वॉलेट कंसोल (V5 या Qt) में पेस्ट करें या lunariumcoin-cli से चलाएँ — दोबारा शुरू करने की ज़रूरत नहीं।",
 };

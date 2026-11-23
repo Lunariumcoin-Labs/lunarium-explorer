@@ -446,3 +446,10 @@ td img.flag { margin-inline-end: 6px; }
   .hero-art { min-height: 0; height: auto; margin-bottom: 0; order: -1; }
   .hero-video { max-width: 560px; }
 }
+
+/* seeds (página Rede) */
+.seeds h3 { margin: 4px 0 6px; font-size: 15px; }
+.seeds h3:not(:first-child) { margin-top: 22px; }
+.seeds p { margin: 0 0 10px; font-size: 13.5px; }
+.seeds .code { white-space: pre; max-height: 260px; overflow: auto; margin-bottom: 10px; }
+.card-head .seg { flex-wrap: wrap; }

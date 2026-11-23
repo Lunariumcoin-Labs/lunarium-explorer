@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "A assinatura não confere com este endereço e este apelido. Assine exatamente o mesmo texto.",
   peerOne: "nó",
   heroArtAlt: "Astronauta da Lunarium diante da logo, com o código refletido no capacete",
+  tabConnections: "Conexões",
+  tabSeeds: "Adicionar nós (seeds)",
+  copyAll: "Copiar tudo",
+  seedsConfTitle: "Linhas para o lunariumcoin.conf",
+  seedsConfHelp: "Se a sua carteira não sincroniza, adicione estas linhas ao arquivo lunariumcoin.conf (na carteira Qt: Ferramentas → Abrir arquivo de configuração) e reinicie a carteira.",
+  seedsConsoleTitle: "Linhas para o console da carteira",
+  seedsConsoleHelp: "Ou cole estas linhas, uma de cada vez, no console da carteira (V5 ou Qt) ou use com o lunariumcoin-cli — não precisa reiniciar.",
 };

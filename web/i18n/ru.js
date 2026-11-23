@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "Подпись не соответствует этому адресу и псевдониму. Подпишите точно такой же текст.",
   peerOne: "узел",
   heroArtAlt: "Астронавт Lunarium перед логотипом, на шлеме отражается код",
+  tabConnections: "Подключения",
+  tabSeeds: "Добавить узлы (seeds)",
+  copyAll: "Скопировать всё",
+  seedsConfTitle: "Строки для lunariumcoin.conf",
+  seedsConfHelp: "Если кошелёк не синхронизируется, добавьте эти строки в файл lunariumcoin.conf (кошелёк Qt: Инструменты → Открыть файл конфигурации) и перезапустите кошелёк.",
+  seedsConsoleTitle: "Строки для консоли кошелька",
+  seedsConsoleHelp: "Или вставьте эти строки по одной в консоль кошелька (V5 или Qt) либо используйте с lunariumcoin-cli — перезапуск не нужен.",
 };

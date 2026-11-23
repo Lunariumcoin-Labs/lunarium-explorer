@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "署名がこのアドレスとエイリアスに一致しません。まったく同じテキストに署名してください。",
   peerOne: "ノード",
   heroArtAlt: "ロゴに向き合う Lunarium の宇宙飛行士。ヘルメットにコードが映る",
+  tabConnections: "接続",
+  tabSeeds: "ノードを追加（シード）",
+  copyAll: "すべてコピー",
+  seedsConfTitle: "lunariumcoin.conf 用の行",
+  seedsConfHelp: "ウォレットが同期しない場合は、これらの行を lunariumcoin.conf に追加し（Qt ウォレット：ツール → 設定ファイルを開く）、ウォレットを再起動してください。",
+  seedsConsoleTitle: "ウォレットのコンソール用の行",
+  seedsConsoleHelp: "または、これらの行を 1 行ずつウォレットのコンソール（V5 または Qt）に貼り付けるか、lunariumcoin-cli で実行してください。再起動は不要です。",
 };

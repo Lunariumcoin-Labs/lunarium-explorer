@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "التوقيع لا يطابق هذا العنوان وهذا الاسم. وقّع النص نفسه تمامًا.",
   peerOne: "عقدة",
   heroArtAlt: "رائد فضاء Lunarium أمام الشعار والكود منعكس على الخوذة",
+  tabConnections: "الاتصالات",
+  tabSeeds: "إضافة عُقد (seeds)",
+  copyAll: "نسخ الكل",
+  seedsConfTitle: "أسطر لملف lunariumcoin.conf",
+  seedsConfHelp: "إذا لم تتزامن محفظتك، أضف هذه الأسطر إلى ملف lunariumcoin.conf (في محفظة Qt: أدوات ← فتح ملف الإعدادات) ثم أعد تشغيل المحفظة.",
+  seedsConsoleTitle: "أسطر لوحدة تحكم المحفظة",
+  seedsConsoleHelp: "أو الصق هذه الأسطر واحدًا تلو الآخر في وحدة تحكم المحفظة (V5 أو Qt) أو استخدمها مع lunariumcoin-cli، دون الحاجة لإعادة التشغيل.",
 };

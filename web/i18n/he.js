@@ -97,4 +97,11 @@ export default {
   claimErr_signature_invalid: "החתימה אינה תואמת לכתובת ולכינוי האלה. חתמו בדיוק על אותו טקסט.",
   peerOne: "צומת",
   heroArtAlt: "האסטרונאוט של Lunarium מול הלוגו, עם קוד שמשתקף בקסדה",
+  tabConnections: "חיבורים",
+  tabSeeds: "הוספת צמתים (seeds)",
+  copyAll: "העתקת הכל",
+  seedsConfTitle: "שורות לקובץ lunariumcoin.conf",
+  seedsConfHelp: "אם הארנק לא מסתנכרן, הוסיפו את השורות האלה לקובץ lunariumcoin.conf (בארנק Qt: כלים ← פתיחת קובץ ההגדרות) והפעילו מחדש את הארנק.",
+  seedsConsoleTitle: "שורות לקונסולת הארנק",
+  seedsConsoleHelp: "או הדביקו את השורות אחת אחת בקונסולת הארנק (V5 או Qt) או השתמשו בהן עם lunariumcoin-cli — בלי הפעלה מחדש.",
 };
