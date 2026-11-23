@@ -391,3 +391,20 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 .claim-help ol { padding-inline-start: 20px; line-height: 1.7; color: var(--muted); }
 .claim-help ol li { margin-bottom: 8px; }
 .claim-help code { font-family: var(--mono); font-size: .9em; background: rgba(50, 185, 214, .1); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--cyan-2); }
+
+/* ---------- seletor de idioma com bandeiras ---------- */
+.lang { position: relative; }
+.lang-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(8, 14, 28, .75); color: var(--text); border: 1px solid var(--line-2); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.lang-btn:hover, .lang-btn[aria-expanded="true"] { border-color: var(--cyan); }
+.lang-btn .chev { color: var(--muted); transition: transform .2s; }
+.lang-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.flag { display: block; flex: none; border-radius: 3px; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18); }
+.lang-menu { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; z-index: 40; min-width: 190px; margin: 0; padding: 6px; list-style: none; background: rgba(8, 14, 28, .97); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow); backdrop-filter: blur(14px); max-height: 70vh; overflow-y: auto; }
+.lang-menu li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; outline: none; }
+.lang-menu li:hover, .lang-menu li:focus { background: rgba(50, 185, 214, .12); }
+.lang-menu li[aria-selected="true"] { background: linear-gradient(135deg, rgba(50, 185, 214, .22), rgba(123, 92, 255, .18)); font-weight: 700; }
+.lang-btn, .lang-menu, .lang-menu li { direction: ltr; }
+@media (max-width: 680px) {
+  .lang-btn span { display: none; }
+  .lang-btn { padding: 8px 10px; }
+}

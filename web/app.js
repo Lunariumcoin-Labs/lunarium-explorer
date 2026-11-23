@@ -3,6 +3,7 @@
 import { startSpace } from "./space.js";
 import { astronautSvg, planetsSvg, icons } from "./art.js";
 import { t, setLang, lang, intlTag, LANGS, initLang } from "./i18n.js";
+import { flagOf } from "./flags.js";
 import qrcode from "./qrcode.mjs";
 import { startVisits, trackView, visitorsHtml, mountVisitors } from "./visitors.js";
 
@@ -647,7 +648,9 @@ async function doSearch(q) {
 function chrome() {
   $("#mainnav").innerHTML = NAV.map(([href, key]) => `<a href="${href}" data-link data-key="${key}">${t("nav_" + key)}</a>`).join("");
   $("#topSearch input").placeholder = t("searchShort");
-  $("#lang").innerHTML = `<select aria-label="${esc(t("language"))}">${LANGS.map((l) => `<option value="${l.code}"${l.code === lang() ? " selected" : ""}>${l.label}</option>`).join("")}</select>`;
+  const curLang = LANGS.find((l) => l.code === lang()) || LANGS[0];
+  $("#lang").innerHTML = `<button type="button" class="lang-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="${esc(t("language"))}">${flagOf(curLang.code)}<span>${esc(curLang.label)}</span><svg class="chev" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    <ul class="lang-menu" role="listbox" aria-label="${esc(t("language"))}" hidden>${LANGS.map((l) => `<li role="option" tabindex="-1" data-lang="${l.code}" aria-selected="${l.code === curLang.code}">${flagOf(l.code)}<span dir="${l.dir}">${esc(l.label)}</span></li>`).join("")}</ul>`;
   $("#footer").innerHTML = `<div class="footer-inner">
     <div><div class="fbrand"><img src="/assets/logo.png" alt="" width="38" height="38"/><div><strong>LunariumCoin Explorer</strong><div class="soft" style="font-size:12.5px">${t("footerTag")}</div></div></div>
       <div class="copy-note">${t("footerNote")}</div></div>
@@ -668,8 +671,34 @@ document.addEventListener("submit", (e) => {
   if (f.id === "topSearch" || f.hasAttribute("data-search")) { e.preventDefault(); doSearch(f.q.value); f.q.blur(); }
   if (f.hasAttribute("data-filter")) { e.preventDefault(); go(`${location.pathname}?q=${encodeURIComponent(f.q.value)}`, true); }
 });
-document.addEventListener("change", (e) => {
-  if (e.target.closest("#lang")) { setLang(e.target.value); chrome(); render(); }
+// Menu de idiomas (com bandeiras): abre/fecha, escolhe, teclado (setas, Enter, Esc) e clique fora fecha.
+function langMenu(open) {
+  const btn = $("#lang .lang-btn"), menu = $("#lang .lang-menu");
+  if (!btn || !menu) return;
+  const willOpen = open ?? menu.hidden;
+  menu.hidden = !willOpen;
+  btn.setAttribute("aria-expanded", String(willOpen));
+  if (willOpen) (menu.querySelector('[aria-selected="true"]') || menu.firstElementChild)?.focus();
+}
+function pickLang(code) {
+  langMenu(false);
+  if (code && code !== lang()) { setLang(code); chrome(); render(); }
+}
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#lang .lang-btn")) { langMenu(); return; }
+  const opt = e.target.closest("#lang [data-lang]");
+  if (opt) { pickLang(opt.dataset.lang); return; }
+  if (!e.target.closest("#lang")) langMenu(false);
+});
+document.addEventListener("keydown", (e) => {
+  const menu = $("#lang .lang-menu");
+  if (!menu || menu.hidden) return;
+  const items = [...menu.querySelectorAll("[data-lang]")];
+  const i = items.indexOf(document.activeElement);
+  if (e.key === "Escape") { langMenu(false); $("#lang .lang-btn").focus(); }
+  else if (e.key === "ArrowDown") { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+  else if ((e.key === "Enter" || e.key === " ") && i >= 0) { e.preventDefault(); pickLang(items[i].dataset.lang); }
 });
 $("#menuBtn").addEventListener("click", () => {
   const nav = $("#mainnav");
