@@ -5,6 +5,8 @@ import { getMeta, setMeta } from "./db.mjs";
 import { canonicalAddress, legacyAddress, isValidAddress } from "./address.mjs";
 
 const SATS = 100000000n;
+// consensus.nCoinbaseMaturity da mainnet (chainparams.cpp): confirmações para gastar coinbase/coinstake
+const COINBASE_MATURITY = 60;
 
 export function xln(sats) {
   if (sats === null || sats === undefined) return null;
@@ -54,8 +56,8 @@ export function createApi({ db, rpc, live, aliases }) {
     addrRank: q("SELECT COUNT(*) + 1 AS r FROM addresses WHERE balance > ?"),
     addrTxs: q(`SELECT at.height, at.received, at.sent, at.balance, t.txid, t.time, t.kind
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ? ORDER BY at.height DESC, at.tx_id DESC LIMIT ? OFFSET ?`),
-    addrUtxos: q(`SELECT t.txid, o.n, o.value, t.height FROM outputs o JOIN txs t ON t.id = o.tx_id
-      WHERE o.addr_id = ? AND o.spent_tx IS NULL ORDER BY t.height DESC LIMIT ?`),
+    addrUtxos: q(`SELECT t.txid, o.n, o.value, t.height, t.kind FROM outputs o JOIN txs t ON t.id = o.tx_id
+      WHERE o.addr_id = ? AND o.spent_tx IS NULL ORDER BY t.height DESC`),
     mnRewards: big("SELECT COUNT(*) AS c, COALESCE(SUM(mn_amount), 0) AS s, MAX(height) AS last FROM blocks WHERE mn_payee = ?"),
     stakeRewards: big("SELECT COUNT(*) AS c, COALESCE(SUM(minted - COALESCE(mn_amount, 0)), 0) AS s, MAX(height) AS last FROM blocks WHERE staker = ?"),
     rich: q("SELECT address, balance, CAST(received AS TEXT) AS received, CAST(sent AS TEXT) AS sent, tx_count, last_height FROM addresses ORDER BY balance DESC LIMIT ?"),
@@ -274,11 +276,17 @@ export function createApi({ db, rpc, live, aliases }) {
     };
   }
 
+  // Carteiras (o APK) montam envios com esta lista, então ela vem inteira, sem limite (decisão do dono).
+  // spendable=false marca recompensa de stake/bloco ainda imatura, que a rede recusa gastar.
   function addressUtxos(a) {
     const r = st.addr.get(canonicalAddress(a));
     if (!r) throw new HttpError(404, "endereço sem movimentação");
     const tip = tipInfo().height;
-    return st.addrUtxos.all(r.id, 500).map((u) => ({ txid: u.txid, vout: u.n, value: xln(u.value), height: u.height, confirmations: tip - u.height + 1 }));
+    return st.addrUtxos.all(r.id).map((u) => {
+      const confirmations = tip - u.height + 1;
+      const reward = u.kind === "coinstake" || u.kind === "coinbase";
+      return { txid: u.txid, vout: u.n, value: xln(u.value), height: u.height, confirmations, kind: u.kind, spendable: !reward || confirmations > COINBASE_MATURITY };
+    });
   }
 
   let richCache = { at: 0, v: null };
