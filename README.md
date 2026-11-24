@@ -1,5 +1,11 @@
 # LunariumCoin Explorer
 
+<p>
+  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.market_cap_usd&prefix=%24&label=market%20cap&color=1f6feb&cacheSeconds=1800" alt="Valor de mercado da XLN (ao vivo)"/></a>
+  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.price_usd&prefix=%24&label=price&color=1f6feb&cacheSeconds=1800" alt="Preço da XLN (ao vivo)"/></a>
+  <br/><sub>Dados ao vivo do agregador <a href="https://galaxia.lunariumcoin.com/?coin=xln">GaláxiaLunarium</a></sub>
+</p>
+
 Explorador de blocos oficial da LunariumCoin (XLN): indexador próprio, API e site, num processo Node.js sem dependências externas (SQLite embutido no Node ≥ 22.13).
 
 ## Como funciona
