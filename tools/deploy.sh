@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Envia o código para a VPS 2 (13.140.187.104) e reinicia o serviço do explorador.
+# Envia o código para o servidor (host SSH em EXPLORER_SSH_HOST) e reinicia o serviço do explorador.
 # O banco (/var/lib/lunarium-explorer/data) e a configuração (/etc/lunarium-explorer) não são tocados.
 set -euo pipefail
 HOST="${EXPLORER_SSH_HOST:-lunarium-painel-vps}"

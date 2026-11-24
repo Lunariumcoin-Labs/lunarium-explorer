@@ -1,12 +1,12 @@
 // Teste ponta a ponta do registro de apelido com uma chave DESCARTÁVEL:
 // assina como a carteira faz (signmessage) e envia ao explorador, que confere no node (verifymessage).
 //   node tools/claim-test.mjs <url-do-explorador> <banco-de-teste.db>
-// Precisa de @noble/curves (pego do projeto lunarium-painel, só para o teste).
+// Precisa de @noble/curves só para o teste: NOBLE_FROM=<pasta com node_modules/@noble/curves> (padrão: pasta atual).
 import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { DatabaseSync } from "node:sqlite";
 
-const require = createRequire("C:/Users/adria/Documents/Codex/lunarium-painel/package.json");
+const require = createRequire(`${(process.env.NOBLE_FROM || process.cwd()).replace(/\\/g, "/")}/package.json`);
 const { secp256k1 } = require("@noble/curves/secp256k1");
 const [BASE, DBFILE] = [process.argv[2] || "http://127.0.0.1:8796", process.argv[3]];
 
