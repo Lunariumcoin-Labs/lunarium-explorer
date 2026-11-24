@@ -1,4 +1,4 @@
-// Arte original do explorador (vetorial): astronauta da Lunarium, planetas e ícones.
+// Original explorer artwork (vector): the Lunarium astronaut, planets and icons.
 
 export function astronautSvg() {
   return `

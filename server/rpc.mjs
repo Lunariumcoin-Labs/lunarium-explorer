@@ -1,5 +1,5 @@
-// Cliente JSON-RPC do node XLN (lunariumcoind). Suporta lotes (vários comandos numa só requisição),
-// que é o que deixa a sincronização inicial rápida.
+// JSON-RPC client for the XLN node (lunariumcoind). Supports batches (several commands in one request),
+// which is what makes the initial sync fast.
 import http from "node:http";
 
 export class RpcError extends Error {
@@ -42,7 +42,7 @@ export function createRpc({ url, user, pass }, { timeoutMs = 120000 } = {}) {
     return r.result;
   }
 
-  // calls = [[method, ...params], ...] → resultados na mesma ordem. Erros individuais viram RpcError no lugar.
+  // calls = [[method, ...params], ...] → results in the same order. Individual errors become an RpcError in place.
   async function batch(calls) {
     if (!calls.length) return [];
     const base = nextId;

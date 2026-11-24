@@ -1,5 +1,5 @@
-// Fundo espacial: estrelas em 3 camadas, galáxia espiral girando devagar e estrelas cadentes.
-// Leve de propósito: a galáxia é desenhada uma vez num canvas fora da tela e só girada a cada quadro.
+// Space background: stars in 3 layers, a slowly rotating spiral galaxy and shooting stars.
+// Lightweight on purpose: the galaxy is drawn once on an offscreen canvas and only rotated each frame.
 
 export function startSpace(canvas) {
   const ctx = canvas.getContext("2d");
@@ -22,7 +22,7 @@ export function startSpace(canvas) {
     halo.addColorStop(1, "rgba(0,0,0,0)");
     g.fillStyle = halo;
     g.fillRect(0, 0, size, size);
-    // braços (espiral logarítmica com dispersão)
+    // arms (logarithmic spiral with scatter)
     for (let i = 0; i < count; i++) {
       const arm = i % arms;
       const d = Math.pow(Math.random(), 1.6);
@@ -38,7 +38,7 @@ export function startSpace(canvas) {
       const s = Math.random() < 0.02 ? 2.2 : rand(0.5, 1.4);
       g.fillRect(x, y, s, s);
     }
-    // núcleo
+    // core
     const core = g.createRadialGradient(R, R, 0, R, R, R * 0.12);
     core.addColorStop(0, "rgba(255,246,220,0.95)");
     core.addColorStop(1, "rgba(255,210,140,0)");
@@ -73,7 +73,7 @@ export function startSpace(canvas) {
     const t = now - t0;
     if (!W || !H || !galaxy?.width || !galaxy2?.width) { if (!reduce) raf = requestAnimationFrame(draw); return; }
     ctx.clearRect(0, 0, W, H);
-    // galáxia principal (canto superior direito) e uma pequena ao fundo
+    // main galaxy (top right corner) and a small one in the background
     const rot = reduce ? 0.6 : t * 0.0000045;
     ctx.save();
     ctx.globalAlpha = 0.55;

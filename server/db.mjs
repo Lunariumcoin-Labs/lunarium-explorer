@@ -1,5 +1,5 @@
-// Banco do explorador (SQLite embutido no Node). Valores sempre em satoshis (1 XLN = 100.000.000).
-// Cada linha cabe com folga num Number; somas grandes (oferta total) são lidas como BigInt.
+// Explorer database (SQLite built into Node). Values are always in satoshis (1 XLN = 100,000,000).
+// Each row fits comfortably in a Number; large sums (total supply) are read as BigInt.
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -17,11 +17,11 @@ CREATE TABLE IF NOT EXISTS blocks (
   size INTEGER,
   tx_count INTEGER,
   kind TEXT,              -- 'pow' | 'pos'
-  minted INTEGER,         -- moedas novas do bloco (saídas - entradas de coinbase/coinstake)
-  fees INTEGER,           -- taxas das transações comuns
-  out_total INTEGER,      -- soma das saídas de todas as transações do bloco
-  staker TEXT,            -- quem gerou o bloco (stake ou mineração)
-  mn_payee TEXT,          -- masternode pago no bloco
+  minted INTEGER,         -- new coins in the block (coinbase/coinstake outputs - inputs)
+  fees INTEGER,           -- fees of regular transactions
+  out_total INTEGER,      -- sum of the outputs of every transaction in the block
+  staker TEXT,            -- who produced the block (stake or mining)
+  mn_payee TEXT,          -- masternode paid in the block
   mn_amount INTEGER,
   difficulty REAL,
   version INTEGER,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS addresses (
 );
 CREATE INDEX IF NOT EXISTS addresses_balance ON addresses(balance DESC);
 
--- Saídas de transação: spent_tx/spent_n apontam para a entrada que a gastou.
+-- Transaction outputs: spent_tx/spent_n point to the input that spent them.
 CREATE TABLE IF NOT EXISTS outputs (
   tx_id INTEGER NOT NULL,
   n INTEGER NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS outputs (
 CREATE INDEX IF NOT EXISTS outputs_spent ON outputs(spent_tx, spent_n) WHERE spent_tx IS NOT NULL;
 CREATE INDEX IF NOT EXISTS outputs_utxo ON outputs(addr_id) WHERE spent_tx IS NULL;
 
--- Histórico por endereço, com o saldo logo depois de cada transação.
+-- Per-address history, with the balance right after each transaction.
 CREATE TABLE IF NOT EXISTS address_txs (
   addr_id INTEGER NOT NULL,
   height INTEGER NOT NULL,
@@ -111,7 +111,7 @@ export function setMeta(db, k, v) {
   db.prepare("INSERT INTO meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v").run(k, String(v));
 }
 
-// Transação SQL simples (o node:sqlite não tem helper próprio).
+// Simple SQL transaction helper (node:sqlite has none of its own).
 export function inTransaction(db, fn) {
   db.exec("BEGIN");
   try {

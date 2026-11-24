@@ -1,11 +1,11 @@
-// Espelha EXATAMENTE a regra de emissão do core (src/masternode.cpp: GetBlockValue)
-// e o mint único (src/chainparams.cpp: nXLNCoinSupplyMintHeight / nXLNCoinSupply), mainnet.
-// Qualquer mudança nessas regras no core precisa ser copiada aqui também.
+// Mirrors EXACTLY the core issuance rule (src/masternode.cpp: GetBlockValue)
+// and the one-time mint (src/chainparams.cpp: nXLNCoinSupplyMintHeight / nXLNCoinSupply), mainnet.
+// Any change to these rules in the core must be copied here too.
 
-const COIN = 1; // já trabalhamos em XLN "inteiro", não em satoshis
+const COIN = 1; // we work in whole XLN here, not satoshis
 
-// Altura REAL do mint na rede: o bloco 1.275.000 pagou 47.000.000 XLN ao endereço do mint e a rede o aceitou.
-// (O chainparams.cpp publicado no GitHub diz 1.270.000 — não é o que o binário da rede usa.)
+// REAL mint height on the network: block 1,275,000 paid 47,000,000 XLN to the mint address and the network accepted it.
+// (The chainparams.cpp published on GitHub used to say 1,270,000 — not what the network binary uses; fixed since.)
 export const MINT_HEIGHT = 1275000;
 export const MINT_AMOUNT = 47000000 * COIN;
 
@@ -21,9 +21,9 @@ export function blockValue(h) {
   return 50 * COIN; // genesis
 }
 
-// Soma fechada por segmento (rápido mesmo em alturas grandes, sem precisar de loop bloco a bloco).
-// [alturaMinExclusive, alturaMaxInclusive, valorPorBloco] — os dois brackets de 12 do código (>340000
-// e >14400) pagam o mesmo valor, então aqui viram um único segmento contínuo.
+// Closed-form sum per segment (fast even at large heights, no block-by-block loop).
+// [minHeightExclusive, maxHeightInclusive, valuePerBlock] — the two 12 XLN brackets in the code (>340000
+// and >14400) pay the same value, so here they become one continuous segment.
 const RANGE_SEGMENTS = [
   [1, 14400, 1],
   [14400, 621701, 12],
@@ -33,10 +33,10 @@ const RANGE_SEGMENTS = [
   [6928901, Infinity, 1],
 ];
 
-/** Supply esperada acumulada até (e incluindo) a altura H, pela regra pura do código, sem taxas. */
+/** Expected cumulative supply up to (and including) height H, by the pure code rule, without fees. */
 export function expectedSupply(H) {
   let total = 0;
-  if (H >= 1) total += 51000000; // bloco 1 (prêmio inicial), caso especial no código
+  if (H >= 1) total += 51000000; // block 1 (premine), a special case in the code
   for (const [lo, hi, val] of RANGE_SEGMENTS) {
     if (H <= lo) break;
     const upper = Math.min(H, hi);

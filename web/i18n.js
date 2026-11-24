@@ -1,4 +1,4 @@
-// Idiomas do explorador: os mesmos 10 da carteira Lunarium V5.
+// Explorer languages: the same 10 as the Lunarium V5 wallet.
 import pt from "./i18n/pt.js";
 import en from "./i18n/en.js";
 import es from "./i18n/es.js";

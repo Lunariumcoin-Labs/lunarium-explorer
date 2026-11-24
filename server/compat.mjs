@@ -1,8 +1,8 @@
-// Compatibilidade com a API do eIquidus (o explorador antigo do explorerxln.com).
-// O app Android, o painel de recompensas (xln-swap-xlnft) e o GaláxiaLunarium leem estas rotas:
-// formato, nomes de campos e até as esquisitices do eIquidus são reproduzidos de propósito.
-//  - /ext/gettx: valores em satoshis, como texto; o stake aparece só pelo lucro (entrada do staker descontada).
-//  - /ext/getaddresstxs: "sent" é o que o endereço RECEBEU e "received" o que ele GASTOU (assim no eIquidus).
+// Compatibility with the eIquidus API (the previous explorer at explorerxln.com).
+// The Android app, the rewards portal (xln-swap-xlnft) and GaláxiaLunarium read these routes:
+// the format, field names and even eIquidus's quirks are reproduced on purpose.
+//  - /ext/gettx: values in satoshis, as strings; a stake shows only the profit (the staker's input is netted out).
+//  - /ext/getaddresstxs: "sent" is what the address RECEIVED and "received" is what it SPENT (as in eIquidus).
 import { HttpError } from "./api.mjs";
 import { canonicalAddress } from "./address.mjs";
 
@@ -24,7 +24,7 @@ export function createCompat({ db, rpc, live, api, aliases }) {
         CAST(SUM(CASE WHEN t.kind = 'coinstake' THEN MAX(at.sent - at.received, 0) ELSE at.sent END) AS TEXT) AS snt
       FROM address_txs at JOIN txs t ON t.id = at.tx_id WHERE at.addr_id = ?`),
     lastTxs: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ? ORDER BY t.height DESC, t.idx DESC LIMIT ? OFFSET ?`),
-    // valor mínimo como o eIquidus: transferência pelo total enviado; stake/coinbase pelo que o bloco criou (líquido)
+    // minimum value as in eIquidus: transfers by total sent; stake/coinbase by what the block created (net)
     lastTxsMin: q(`SELECT t.id, t.txid, t.height, t.time, t.kind FROM txs t WHERE t.height <= ?1
       AND ((t.kind = 'normal' AND t.value_out >= ?2) OR (t.kind <> 'normal' AND t.value_out - t.value_in >= ?2))
       ORDER BY t.height DESC, t.idx DESC LIMIT ?3 OFFSET ?4`),
@@ -33,7 +33,7 @@ export function createCompat({ db, rpc, live, api, aliases }) {
     mnRewardsTotal: q("SELECT COALESCE(SUM(mn_amount), 0) AS s FROM blocks WHERE mn_payee = ? AND height >= ?"),
   };
 
-  // Transação no formato do banco do eIquidus (vin/vout agrupados por endereço, em satoshis).
+  // Transaction in the eIquidus database format (vin/vout grouped by address, in satoshis).
   function eTx(t) {
     const merge = (rows) => {
       const out = [];
@@ -172,7 +172,7 @@ export function createCompat({ db, rpc, live, api, aliases }) {
     });
   }
 
-  // Encaminha ao node só os comandos de leitura que o eIquidus expunha.
+  // Forwards to the node only the read-only commands that eIquidus exposed.
   async function rpcPassthrough(name, query) {
     switch (name) {
       case "getblockcount": return { text: String(tip()) };
@@ -202,7 +202,7 @@ export function createCompat({ db, rpc, live, api, aliases }) {
   }
 
   async function handle(pathname, query) {
-    const parts = pathname.split("/").filter(Boolean); // ["ext", "gettx", ...] ou ["api", "getblockcount"]
+    const parts = pathname.split("/").filter(Boolean); // ["ext", "gettx", ...] or ["api", "getblockcount"]
     if (parts[0] === "api") {
       try { return await rpcPassthrough(parts[1], query); }
       catch (e) { if (e instanceof HttpError) throw e; return { text: "There was an error. Check your console." }; }

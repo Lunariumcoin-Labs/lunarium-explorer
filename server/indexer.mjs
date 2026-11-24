@@ -1,5 +1,5 @@
-// Indexador: lê a blockchain XLN do node, bloco a bloco, e monta o banco do explorador.
-// Também detecta blocos órfãos (reorg) e desfaz o que for preciso até o ponto em comum com a rede.
+// Indexer: reads the XLN blockchain from the node, block by block, and builds the explorer database.
+// It also detects orphaned blocks (reorgs) and rolls back to the common point with the network.
 import { getMeta, setMeta, inTransaction } from "./db.mjs";
 import { RpcError } from "./rpc.mjs";
 import { canonicalAddress } from "./address.mjs";
@@ -7,7 +7,7 @@ import { canonicalAddress } from "./address.mjs";
 const SATS = 100000000;
 export const toSats = (v) => Math.round(Number(v) * SATS);
 
-// Endereço "dono" de uma saída, sempre na forma "L". Cold staking lista [staker, dono]: o saldo é do dono.
+// The "owner" address of an output, always in "L" form. Cold staking lists [staker, owner]: the balance is the owner's.
 export function outputAddress(spk) {
   const list = spk?.addresses;
   if (!Array.isArray(list) || !list.length) return null;
@@ -62,7 +62,7 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
     return id;
   }
 
-  const txIdCache = new Map(); // txids recentes → id (entradas quase sempre gastam saídas recentes)
+  const txIdCache = new Map(); // recent txids → id (inputs almost always spend recent outputs)
   function txIdOf(txid) {
     const c = txIdCache.get(txid);
     if (c !== undefined) return c;
@@ -77,7 +77,7 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
 
     txs.forEach((tx, idx) => {
       const k = txKind(tx);
-      // entradas: busca a saída gasta, marca como gasta e soma por endereço
+      // inputs: look up the spent output, mark it spent and add it up per address
       let valueIn = 0;
       const perAddr = new Map(); // addr_id → { r, s }
       const touch = (id) => { let o = perAddr.get(id); if (!o) { o = { r: 0, s: 0 }; perAddr.set(id, o); } return o; };
@@ -92,7 +92,7 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
       const opRet = (tx.vout || []).map((v) => opReturnText(v.scriptPubKey)).find((x) => x !== null) ?? null;
       const size = tx.hex ? tx.hex.length / 2 : null;
 
-      // entradas: cada uma gasta uma saída já indexada
+      // inputs: each one spends an already indexed output
       const spends = [];
       if (k !== "coinbase") {
         (tx.vin || []).forEach((vin, i) => {
@@ -123,7 +123,7 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
       if (k === "normal") fees += fee;
       else minted += valueOut - valueIn;
 
-      // quem gerou o bloco e qual masternode recebeu
+      // who produced the block and which masternode was paid
       if (k === "coinstake") {
         staker = outsInfo[1]?.addr ?? null;
         const last = outsInfo[outsInfo.length - 1];
@@ -144,7 +144,7 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
       staker, mnPayee, mnAmount, block.difficulty, block.version, block.bits, block.nonce, block.merkleroot);
   }
 
-  // Desfaz todos os blocos acima de `height` (reorg).
+  // Rolls back every block above `height` (reorg).
   function rollbackTo(height) {
     prefetch = null;
     inTransaction(db, () => {
@@ -200,13 +200,13 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
   let lastLog = 0;
   let prefetch = null;
 
-  // Um passo: processa até `batchBlocks` blocos. Devolve quantos processou (0 = já está na ponta).
+  // One step: processes up to `batchBlocks` blocks. Returns how many were processed (0 = already at the tip).
   async function step() {
     const nodeHeight = await rpc.call("getblockcount");
     const mine = st.maxHeight.get().h;
     const next = mine === null ? 0 : mine + 1;
     if (next > nodeHeight) {
-      // na ponta: confere se o último bloco ainda é o da rede
+      // at the tip: check that our last block is still the network's
       if (mine !== null) {
         const theirs = await rpc.call("getblockhash", mine);
         if (theirs !== st.blockByHeight.get(mine).hash) {
@@ -225,14 +225,14 @@ export function createIndexer({ db, rpc, batchBlocks = 40, log = console.log }) 
     }
     prefetch = null;
     if (!items) items = await fetchRange(next, to);
-    // enquanto grava este lote, o node já prepara o próximo
+    // while this batch is written, the node already prepares the next one
     if (to < nodeHeight) {
       const nFrom = to + 1, nTo = Math.min(nodeHeight, to + batchBlocks);
       const promise = fetchRange(nFrom, nTo);
       promise.catch(() => {});
       prefetch = { from: nFrom, to: nTo, promise };
     }
-    // o primeiro bloco precisa encaixar no último que temos
+    // the first block must connect to the last one we have
     if (next > 0 && items[0].block.previousblockhash !== st.blockByHeight.get(next - 1)?.hash) {
       const fork = await findForkPoint(next - 1);
       log(`reorg detectado antes do bloco ${next}: voltando para ${fork}`);

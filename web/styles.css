@@ -70,7 +70,7 @@ a:hover { color: #fff; }
 .menu-btn { display: none; background: transparent; border: 1px solid var(--line-2); border-radius: 10px; width: 40px; height: 38px; padding: 9px; cursor: pointer; flex-direction: column; justify-content: space-between; }
 .menu-btn span { display: block; height: 2px; background: var(--text); border-radius: 2px; }
 
-/* ---------- área principal ---------- */
+/* ---------- main area ---------- */
 .app { position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto; padding: 26px 20px 60px; min-height: 70vh; outline: none; }
 .page-enter { animation: pageIn .45s ease both; }
 @keyframes pageIn { from { transform: translateY(8px); } to { transform: none; } }
@@ -106,7 +106,7 @@ a:hover { color: #fff; }
   .page-enter, .row-new { animation: none !important; }
 }
 
-/* ---------- cartões ---------- */
+/* ---------- cards ---------- */
 .card { background: var(--glass); border: 1px solid var(--line); border-radius: var(--radius); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: var(--shadow); }
 .card-pad { padding: 20px 22px; }
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
@@ -166,7 +166,7 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 .pill.bad { color: var(--red); border-color: rgba(255, 107, 107, .45); background: rgba(255, 107, 107, .1); }
 .pill.warn { color: var(--gold-2); border-color: rgba(243, 183, 71, .45); background: rgba(243, 183, 71, .1); }
 
-/* ---------- páginas de detalhe ---------- */
+/* ---------- detail pages ---------- */
 .page-title { display: flex; align-items: center; gap: 16px; margin: 6px 0 20px; flex-wrap: wrap; }
 .page-title .icon-orb { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(50, 185, 214, .25), rgba(123, 92, 255, .25)); border: 1px solid var(--line-2); color: var(--cyan-2); flex: none; box-shadow: 0 0 30px rgba(50, 185, 214, .2); }
 .page-title .icon-orb svg { width: 28px; height: 28px; }
@@ -208,7 +208,7 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 .seg button.on { background: linear-gradient(135deg, rgba(50, 185, 214, .3), rgba(123, 92, 255, .25)); color: #fff; }
 .field { background: rgba(8, 14, 28, .75); border: 1px solid var(--line-2); color: var(--text); border-radius: 12px; padding: 9px 13px; font: inherit; }
 
-/* ---------- gráficos ---------- */
+/* ---------- charts ---------- */
 .chart { position: relative; padding: 10px 14px 6px; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart .grid line { stroke: rgba(130, 180, 255, .1); }
@@ -253,7 +253,7 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 .api-row .p { font-family: var(--mono); font-size: 13.5px; word-break: break-all; }
 .api-row .d { color: var(--muted); font-size: 13px; margin-top: 3px; }
 
-/* ---------- rodapé ---------- */
+/* ---------- footer ---------- */
 .footer { position: relative; z-index: 1; border-top: 1px solid var(--line); background: rgba(4, 7, 14, .75); backdrop-filter: blur(10px); }
 .footer-inner { max-width: var(--maxw); margin: 0 auto; padding: 28px 20px; display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 24px; font-size: 13.5px; }
 .footer h4 { margin: 0 0 10px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--soft); }
@@ -313,7 +313,7 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 }
 .muted code, .card-pad code { font-family: var(--mono); font-size: .9em; background: rgba(50, 185, 214, .1); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--cyan-2); }
 
-/* ---------- visitantes (pulso da comunidade + globo) ---------- */
+/* ---------- visitors (community pulse + globe) ---------- */
 .vis-strip { margin-top: 18px; padding: 18px 22px; }
 .vis-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .vis-live { display: inline-flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 800; letter-spacing: .2em; color: var(--green); }
@@ -392,7 +392,7 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
 .claim-help ol li { margin-bottom: 8px; }
 .claim-help code { font-family: var(--mono); font-size: .9em; background: rgba(50, 185, 214, .1); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; color: var(--cyan-2); }
 
-/* ---------- seletor de idioma com bandeiras ---------- */
+/* ---------- language picker with flags ---------- */
 .lang { position: relative; }
 .lang-btn { display: inline-flex; align-items: center; gap: 8px; background: rgba(8, 14, 28, .75); color: var(--text); border: 1px solid var(--line-2); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .lang-btn:hover, .lang-btn[aria-expanded="true"] { border-color: var(--cyan); }
@@ -409,13 +409,13 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; white-spac
   .lang-btn { padding: 8px 10px; }
 }
 
-/* bandeiras em imagem (flag-icons) */
+/* flag images (flag-icons) */
 img.flag, .flag-none { display: inline-block; width: 22px; height: 16px; border-radius: 3px; vertical-align: -3px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, .18); background: rgba(255, 255, 255, .06); }
 .flag-none { box-shadow: none; background: none; font-size: 14px; line-height: 16px; text-align: center; }
 .gl-flag { display: inline-flex; align-items: center; }
 td img.flag { margin-inline-end: 6px; }
 
-/* ---------- vídeo do astronauta (abertura da carteira V5) ---------- */
+/* ---------- astronaut video (V5 wallet opening) ---------- */
 .hero-art { display: grid; place-items: center; }
 .hero-video { position: relative; width: 100%; max-width: 640px; aspect-ratio: 16 / 10; border-radius: 28px; overflow: hidden; isolation: isolate;
   -webkit-mask-image: radial-gradient(ellipse 52% 54% at 50% 48%, #000 58%, rgba(0, 0, 0, .55) 80%, transparent 100%);
@@ -431,7 +431,7 @@ td img.flag { margin-inline-end: 6px; }
   background: radial-gradient(circle, rgba(50, 185, 214, .22), rgba(123, 92, 255, .1) 45%, transparent 70%); filter: blur(10px); }
 .hero-art { position: relative; height: auto; min-height: 360px; }
 
-/* ---------- topo: menu cabe sem cortar ---------- */
+/* ---------- header: the menu fits without clipping ---------- */
 .topbar-inner { max-width: 1480px; }
 @media (max-width: 1500px) { .lang-btn span { display: none; } }
 @media (max-width: 1360px) {
@@ -447,7 +447,7 @@ td img.flag { margin-inline-end: 6px; }
   .hero-video { max-width: 560px; }
 }
 
-/* seeds (página Rede) */
+/* seeds (Network page) */
 .seeds h3 { margin: 4px 0 6px; font-size: 15px; }
 .seeds h3:not(:first-child) { margin-top: 22px; }
 .seeds p { margin: 0 0 10px; font-size: 13.5px; }

@@ -1,4 +1,4 @@
-// Thread do indexador: conexão própria com o banco, para a escrita nunca travar o site/API.
+// Indexer thread: its own database connection, so writes never block the site/API.
 import { parentPort, workerData } from "node:worker_threads";
 import { openDb } from "./db.mjs";
 import { createRpc } from "./rpc.mjs";

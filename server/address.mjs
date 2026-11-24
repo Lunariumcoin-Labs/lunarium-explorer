@@ -1,6 +1,6 @@
-// Endereços XLN: o core mostra P2PKH com prefixo 75 ("X") abaixo do bloco 1.280.000 e com prefixo 48 ("L")
-// a partir dele (chainparams.cpp: nAddressPrefixV2ActivationHeight). É o MESMO endereço (mesmo hash);
-// o explorador guarda e mostra sempre a forma "L". P2SH (78) não mudou.
+// XLN addresses: the core shows P2PKH with prefix 75 ("X") below block 1,280,000 and with prefix 48 ("L")
+// from that block on (chainparams.cpp: nAddressPrefixV2ActivationHeight). It is the SAME address (same hash);
+// the explorer always stores and shows the "L" form. P2SH (78) did not change.
 import crypto from "node:crypto";
 
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -36,7 +36,7 @@ export function b58encodeCheck(body) {
 }
 
 const cache = new Map();
-/** Forma canônica ("L…") de um endereço; devolve o próprio texto se não for P2PKH legado. */
+/** Canonical ("L…") form of an address; returns the input unchanged if it is not a legacy P2PKH. */
 export function canonicalAddress(a) {
   if (!a || a[0] !== "X") return a;
   const c = cache.get(a);
@@ -49,14 +49,14 @@ export function canonicalAddress(a) {
   return out;
 }
 
-/** Forma antiga ("X…") de um endereço L, só para mostrar como referência. */
+/** Old ("X…") form of an L address, shown for reference only. */
 export function legacyAddress(a) {
   const body = a && a[0] === "L" ? b58decodeCheck(a) : null;
   if (!body || body.length !== 21 || body[0] !== P2PKH) return null;
   return b58encodeCheck(Buffer.concat([Buffer.from([P2PKH_LEGACY]), body.subarray(1)]));
 }
 
-/** Endereço com formato e soma de verificação válidos (L, X ou P2SH). */
+/** Address with a valid format and checksum (L, X or P2SH). */
 export function isValidAddress(a) {
   if (!/^[1-9A-HJ-NP-Za-km-z]{26,35}$/.test(a || "")) return false;
   const body = b58decodeCheck(a);

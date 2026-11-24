@@ -1,8 +1,8 @@
-// Contador de visitantes do explorador (mesma ideia do /api/visits.php do lunariumcoin.com):
-// sem cookies e sem guardar IP. Do IP só se descobre o PAÍS (cache em memória por hash, nunca o IP em disco).
+// Explorer visitor counter (same idea as lunariumcoin.com's /api/visits.php):
+// no cookies and no stored IPs. Only the COUNTRY is derived from the IP (in-memory cache by hash, never the IP on disk).
 import crypto from "node:crypto";
 
-const ONLINE_WINDOW = 90; // segundos sem sinal para sair de "online agora"
+const ONLINE_WINDOW = 90; // seconds without a signal before leaving "online now"
 const BOT_UA = /bot|crawl|spider|slurp|curl|wget|python|httpclient|okhttp|java\/|go-http|axios|node-fetch|headless|lighthouse|monitor|uptime|preview|facebookexternalhit|whatsapp|telegrambot/i;
 
 export function createVisits({ db, log = console.log }) {
@@ -27,11 +27,11 @@ export function createVisits({ db, log = console.log }) {
   let views = num("visits_views");
 
   const online = new Map(); // sid → { t, cc }
-  let events = []; // [{ cc, ts }] últimos acessos com país (só memória)
+  let events = []; // [{ cc, ts }] latest visits with country (memory only)
   const geoCache = new Map(); // hash(ip) → { cc, at }
-  const salt = crypto.randomBytes(16).toString("hex"); // muda a cada reinício: o hash não identifica ninguém
-  const perIp = new Map(); // limite de registros por IP (em memória, por hash)
-  const perNet = new Map(); // limite de visitantes novos por faixa de rede (em memória, por hash)
+  const salt = crypto.randomBytes(16).toString("hex"); // changes on every restart: the hash identifies no one
+  const perIp = new Map(); // per-IP record limit (in memory, by hash)
+  const perNet = new Map(); // new-visitor limit per network range (in memory, by hash)
 
   const dayKey = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
 
@@ -87,13 +87,13 @@ export function createVisits({ db, log = console.log }) {
     };
   }
 
-  // a = "hit" (primeira página da visita), "view" (troca de página no site), "beat" (ainda aqui), "read"
+  // a = "hit" (first page of the visit), "view" (page change within the site), "beat" (still here), "read"
   async function handle({ a, sid, isNew, ip, ua }) {
     sid = String(sid || "").replace(/[^a-z0-9]/gi, "").slice(0, 32);
     const bot = BOT_UA.test(ua || "") || !ua;
     if (bot || !sid || !["hit", "view", "beat"].includes(a)) return snapshot();
 
-    // no máximo 40 registros por minuto por origem (hash, só em memória)
+    // at most 40 records per minute per origin (hash, memory only)
     const k = crypto.createHash("sha256").update(salt + ip).digest("hex").slice(0, 16);
     const now = Date.now();
     let lim = perIp.get(k);
@@ -101,8 +101,8 @@ export function createVisits({ db, log = console.log }) {
     if (++lim.n > 40) return snapshot();
     if (perIp.size > 50000) perIp.clear();
 
-    // Freio de rede: no máximo 30 visitantes NOVOS por hora vindos da mesma faixa (IPv4 /16, IPv6 /48).
-    // Robôs que trocam de IP dentro da mesma faixa (ex.: 247 IPs de 152.163.x.x) param aqui.
+    // Network brake: at most 30 NEW visitors per hour from the same range (IPv4 /16, IPv6 /48).
+    // Bots that rotate IPs within one range (e.g. 247 IPs in 152.163.x.x) stop here.
     if (a === "hit" && isNew) {
       const v4 = /^(?:::ffff:)?(\d+)\.(\d+)\.\d+\.\d+$/.exec(ip || "");
       const net = v4 ? `${v4[1]}.${v4[2]}` : String(ip || "").split(":").slice(0, 3).join(":");
@@ -134,7 +134,7 @@ export function createVisits({ db, log = console.log }) {
     return snapshot();
   }
 
-  // dias com mais de 400 dias saem (o total geral fica)
+  // days older than 400 days are pruned (the all-time total stays)
   setInterval(() => { try { st.prune.run(dayKey(Date.now() - 400 * 86400000)); } catch {} sweep(); }, 3600000).unref();
 
   return { handle, snapshot };

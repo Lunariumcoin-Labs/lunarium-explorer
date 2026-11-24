@@ -1,38 +1,51 @@
 # LunariumCoin Explorer
 
 <p>
-  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.market_cap_usd&prefix=%24&label=market%20cap&color=1f6feb&cacheSeconds=1800" alt="Valor de mercado da XLN (ao vivo)"/></a>
-  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.price_usd&prefix=%24&label=price&color=1f6feb&cacheSeconds=1800" alt="Preço da XLN (ao vivo)"/></a>
-  <br/><sub>Dados ao vivo do agregador <a href="https://galaxia.lunariumcoin.com/?coin=xln">GaláxiaLunarium</a></sub>
+  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.market_cap_usd&prefix=%24&label=market%20cap&color=1f6feb&cacheSeconds=1800" alt="XLN market cap (live)"/></a>
+  <a href="https://galaxia.lunariumcoin.com/?coin=xln"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgalaxia.lunariumcoin.com%2Fapi%2Fv1%2Fcoins%2Fxln&query=%24.data.price_usd&prefix=%24&label=price&color=1f6feb&cacheSeconds=1800" alt="XLN price (live)"/></a>
+  <br/><sub>Live data from the <a href="https://galaxia.lunariumcoin.com/?coin=xln">GaláxiaLunarium</a> aggregator</sub>
 </p>
 
-Explorador de blocos oficial da LunariumCoin (XLN): indexador próprio, API e site, num processo Node.js sem dependências externas (SQLite embutido no Node ≥ 22.13).
+The official LunariumCoin (XLN) block explorer, live at [explorerxln.com](https://explorerxln.com): its own indexer, API and website in a single Node.js process with no external dependencies (SQLite built into Node ≥ 22.13).
 
-## Como funciona
+## How it works
 
-- **Node dedicado** (`lunarium-explorer-node.service`): `lunariumcoind` com `txindex=1`, RPC só em 127.0.0.1:13987, sem porta P2P aberta.
-- **Indexador** (`server/indexer.mjs`, numa thread própria): lê bloco a bloco por RPC em lotes, grava blocos, transações, saídas, endereços e o histórico com saldo após cada transação. Detecta reorg e desfaz até o ponto em comum.
-- **Endereços**: o core mostra P2PKH com prefixo `X` abaixo do bloco 1.280.000 e `L` a partir dele (mesmo hash). O explorador guarda e mostra sempre a forma `L` (`server/address.mjs`).
-- **Auditoria da emissão** (`server/api.mjs`): para cada bloco, moedas novas ≤ `GetBlockValue(altura)` (+ taxas em PoW, + mint de 47M no bloco 1.275.000, a altura que a rede aceitou), a mesma regra do `ConnectBlock`. Também confere a oferta com `gettxoutsetinfo` do próprio node na mesma altura.
-- **API nova** em `/api/v1/*` (valores em XLN como texto com 8 casas) e **compatibilidade total com o eIquidus** em `/api/*` e `/ext/*` (`server/compat.mjs`): app Android, painel de recompensas e GaláxiaLunarium continuam funcionando sem mudança. `tools/compat-diff.mjs` compara as respostas com o explorador antigo.
-- **Site** (`web/`): sem framework nem build; 10 idiomas (os mesmos da carteira V5), arte vetorial própria (astronauta, planetas, galáxia em canvas), atualização ao vivo por SSE.
+- **Dedicated node** (`lunarium-explorer-node.service`): `lunariumcoind` with `txindex=1`, RPC on 127.0.0.1:13987 only, no open P2P port.
+- **Indexer** (`server/indexer.mjs`, in its own thread): reads the chain block by block over batched RPC and stores blocks, transactions, outputs, addresses and each address's history with the balance after every transaction. It detects reorgs and rolls back to the common point.
+- **Addresses**: the core shows P2PKH with the `X` prefix below block 1,280,000 and `L` from that block on (same hash). The explorer always stores and shows the `L` form (`server/address.mjs`).
+- **Issuance audit** (`server/api.mjs`): for every block, new coins ≤ `GetBlockValue(height)` (+ fees in PoW blocks, + the 47M mint at block 1,275,000, the height the network accepted), the same rule as `ConnectBlock`. The supply is also cross-checked against the node's own `gettxoutsetinfo` at the same height.
+- **New API** at `/api/v1/*` (XLN values as strings with 8 decimals) and **full eIquidus compatibility** at `/api/*` and `/ext/*` (`server/compat.mjs`): the Android app, the rewards portal and GaláxiaLunarium keep working unchanged. `tools/compat-diff.mjs` compares the answers with the previous explorer.
+- **Address aliases**: owners claim a name by signing it with their wallet (`signmessage`); the node verifies the signature (`verifymessage`). Official team labels carry a verified badge.
+- **Website** (`web/`): no framework and no build step; 10 languages (the same as the V5 wallet), original vector artwork (astronaut, planets, canvas galaxy), live updates over SSE.
+- **Visitor counter**: no cookies and no stored IP addresses; only the country is derived from the IP.
 
-## Servidor (VPS 2)
+## Server layout
 
-| Item | Onde |
+| Item | Location |
 |---|---|
-| Código | `/opt/lunarium-explorer` (versões anteriores em `/opt/lunarium-explorer-releases`) |
-| Banco | `/var/lib/lunarium-explorer/data/explorer.db` |
+| Code | `/opt/lunarium-explorer` (previous versions in `/opt/lunarium-explorer-releases`) |
+| Database | `/var/lib/lunarium-explorer/data/explorer.db` |
 | Node | `/var/lib/lunarium-explorer/node` |
-| Configuração | `/etc/lunarium-explorer/{rpc,explorer}.env` |
-| Serviços | `lunarium-explorer.service` (127.0.0.1:8795), `lunarium-explorer-node.service` |
+| Configuration | `/etc/lunarium-explorer/{rpc,explorer}.env` (never committed) |
+| Services | `lunarium-explorer.service` (127.0.0.1:8795), `lunarium-explorer-node.service` |
 
-Deploy: `bash tools/deploy.sh`. Testes: `npm test`.
+Deploy: `bash tools/deploy.sh` (SSH host in `EXPLORER_SSH_HOST`). Tests: `npm test`.
 
-## Variáveis
+## Environment variables
 
-`XLN_RPC_URL`, `XLN_RPC_USER`, `XLN_RPC_PASS`, `EXPLORER_DB`, `EXPLORER_HOST`, `EXPLORER_PORT`, `EXPLORER_BATCH`, `EXPLORER_PRICE_URL` (preço do GaláxiaLunarium), `EXPLORER_PUBLIC_URL`, `EXPLORER_RATE_LIMIT`.
+| Variable | Purpose |
+|---|---|
+| `XLN_RPC_URL`, `XLN_RPC_USER`, `XLN_RPC_PASS` | Node RPC connection |
+| `EXPLORER_DB` | SQLite database path |
+| `EXPLORER_HOST`, `EXPLORER_PORT` | HTTP listen address |
+| `EXPLORER_BATCH` | Blocks per batch during the initial sync |
+| `EXPLORER_PRICE_URL` | Price source (GaláxiaLunarium API), optional |
+| `EXPLORER_PUBLIC_URL` | Public site URL |
+| `EXPLORER_LABELS` | Official address labels file (`{"address": "name"}`) |
+| `EXPLORER_RATE_LIMIT`, `EXPLORER_RATE_EXEMPT` | API requests per minute per IP, and IPs exempt from it |
+| `EXPLORER_HIDE_PEERS` | Peer IPs hidden from the public network page |
+| `EXPLORER_INDEXER` | `0` serves the API/site without indexing |
 
-## Licença
+## License
 
-[MIT](LICENSE) © 2026 Lunariumcoin Labs. As bandeiras em `web/assets/flags/` vêm do projeto flag-icons, também MIT (`web/assets/flags/LICENSE.txt`).
+[MIT](LICENSE) © 2026 Lunariumcoin Labs. The flags in `web/assets/flags/` come from the flag-icons project, also MIT (`web/assets/flags/LICENSE.txt`).

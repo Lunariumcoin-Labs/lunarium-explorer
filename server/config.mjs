@@ -1,4 +1,4 @@
-// Configuração por variáveis de ambiente (no servidor vêm de /etc/lunarium-explorer/*.env via systemd).
+// Configuration from environment variables (on the server they come from /etc/lunarium-explorer/*.env via systemd).
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -16,14 +16,14 @@ export const config = {
   dbPath: env.EXPLORER_DB || path.join(root, "data", "explorer.db"),
   host: env.EXPLORER_HOST || "127.0.0.1",
   port: Number(env.EXPLORER_PORT || 8795),
-  // Quantos blocos por lote durante a sincronização inicial.
+  // Blocks per batch during the initial sync.
   batchBlocks: Number(env.EXPLORER_BATCH || 40),
-  // Endereço público do site (links absolutos, sitemap).
+  // Public site URL (absolute links, sitemap).
   publicUrl: env.EXPLORER_PUBLIC_URL || "https://explorerxln.com",
-  // Preço: API oficial que o GaláxiaLunarium já consolida (maior preço entre as exchanges). Opcional.
+  // Price: the official API that GaláxiaLunarium already consolidates (highest price across exchanges). Optional.
   priceUrl: env.EXPLORER_PRICE_URL || "",
-  // Rótulos oficiais de endereços (JSON {"endereço": "nome"}), relido a cada 5 minutos.
+  // Official address labels (JSON {"address": "name"}), re-read every 5 minutes.
   labelsFile: env.EXPLORER_LABELS || "/etc/lunarium-explorer/labels.json",
-  // false = só serve a API/site sem indexar (útil para testes locais com banco copiado).
+  // false = serve the API/site only, without indexing (useful for local tests with a copied database).
   indexer: env.EXPLORER_INDEXER !== "0",
 };

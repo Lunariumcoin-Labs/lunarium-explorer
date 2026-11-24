@@ -1,7 +1,7 @@
-// Teste comparativo: as rotas antigas (/api, /ext) do explorador NOVO devem responder igual ao eIquidus
-// (explorerxln.com hoje). Só leitura. Uso:
-//   node tools/compat-diff.mjs <url-do-novo> [url-do-antigo] [quantidade]
-// Ex.: node tools/compat-diff.mjs http://127.0.0.1:18795 https://explorerxln.com 60
+// Comparison test: the old routes (/api, /ext) of the NEW explorer must answer like eIquidus.
+// Read-only. Usage:
+//   node tools/compat-diff.mjs <new-url> [old-url] [count]
+// E.g.: node tools/compat-diff.mjs http://127.0.0.1:18795 https://explorerxln.com 60
 const NEW = process.argv[2] || "http://127.0.0.1:18795";
 const OLD = process.argv[3] || "https://explorerxln.com";
 const N = Number(process.argv[4] || 40);
@@ -17,7 +17,7 @@ async function get(base, path, text = false) {
   }
 }
 
-// Campos que mudam com o tempo e não são comparados literalmente.
+// Fields that change over time and are not compared literally.
 const VOLATILE = new Set(["confirmations", "blockcount", "lastseen", "activetime", "lastpaid", "createdAt", "connections", "rank"]);
 function diff(a, b, path = "", out = []) {
   if (out.length > 12) return out;
@@ -48,12 +48,12 @@ async function compare(label, path, { text = false, normalize = (x) => x } = {})
   else results.ok++;
 }
 
-// Altura comum: o antigo e o novo precisam estar na mesma ponta para comparar saldos.
+// Common height: old and new must be at the same tip to compare balances.
 const [hNew, hOld] = await Promise.all([get(NEW, "/api/getblockcount", true), get(OLD, "/api/getblockcount", true)]);
 console.log(`altura: novo ${hNew} · antigo ${hOld}`);
 if (Math.abs(Number(hNew) - Number(hOld)) > 3) console.log("AVISO: alturas diferentes; saldos recentes podem divergir só por isso.");
 
-// Amostras reais vindas do explorador antigo
+// Real samples taken from the old explorer
 const last = await get(OLD, `/ext/getlasttxs/0/0/${N}`);
 const big = await get(OLD, `/ext/getlasttxs/100/0/${N}`);
 const mns = await get(OLD, "/ext/getmasternodelist");

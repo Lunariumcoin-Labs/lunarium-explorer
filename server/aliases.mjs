@@ -1,17 +1,17 @@
-// Apelidos de endereço (alias). Dois tipos:
-//  - "claim": o dono prova que o endereço é dele assinando o apelido na carteira (signmessage) e o node confere
-//    (verifymessage). Assinar uma mensagem VAZIA remove o apelido — igual ao /claim do eIquidus.
-//  - "official": rótulos da equipe (arquivo labels.json no servidor), com selo de verificado. Têm prioridade.
+// Address aliases. Two kinds:
+//  - "claim": the owner proves the address is theirs by signing the alias in the wallet (signmessage) and the node
+//    checks it (verifymessage). Signing an EMPTY message removes the alias — same as eIquidus /claim.
+//  - "official": team labels (labels.json on the server), shown with a verified badge. They take priority.
 import fs from "node:fs";
 import crypto from "node:crypto";
 import { canonicalAddress, isValidAddress } from "./address.mjs";
 
-// Rótulos oficiais que vêm do próprio código do core (não dependem de arquivo).
+// Official labels that come from the core code itself (no file needed).
 const BUILTIN_OFFICIAL = {
-  LRdqugAgypEzDVyp1cJ86bwDrNW12BDefT: "Mint 47M · bloco 1.275.000", // sXLNCoinSupplyMintAddress (chainparams.cpp); mint aceito pela rede no bloco 1.275.000 sXLNCoinSupplyMintAddress
+  LRdqugAgypEzDVyp1cJ86bwDrNW12BDefT: "Mint 47M · bloco 1.275.000", // sXLNCoinSupplyMintAddress (chainparams.cpp); the network accepted the mint at block 1,275,000
 };
 
-// Nomes que imitam o projeto ou a equipe ficam para os rótulos oficiais (evita golpe por imitação).
+// Names that imitate the project or the team are kept for official labels (prevents impersonation scams).
 const RESERVED = /lunarium|xlnft|\bxln\b|oficial|official|admin|suporte|support|equipe|\bteam\b|\bdev\b|desenvolvedor|developer|moderador|moderator|\bmint\b|explorer|exchange|binance|airdrop|giveaway|sorteio|staff/i;
 const NAME_OK = /^[\p{L}\p{N}][\p{L}\p{N} ._\-&'()#]{0,30}[\p{L}\p{N})]$|^[\p{L}\p{N}]$/u;
 
@@ -59,7 +59,7 @@ export function createAliases({ db, rpc, labelsFile, log = console.log }) {
   }
   const nameOf = (address) => all()[address] || null;
 
-  // Rótulos oficiais: código do core + arquivo da equipe (relido a cada 5 min; editar o arquivo basta).
+  // Official labels: core code + the team file (re-read every 5 min; editing the file is enough).
   let labelsMtime = 0;
   function loadOfficial() {
     let fileLabels = {};
@@ -82,7 +82,7 @@ export function createAliases({ db, rpc, labelsFile, log = console.log }) {
         const a = canonicalAddress(addr);
         const n = normalizeName(name);
         if (!isValidAddress(a) || !n) continue;
-        // um rótulo oficial toma o lugar de um apelido igual de outro endereço
+        // an official label replaces an identical alias held by another address
         db.prepare("DELETE FROM address_names WHERE name_lc = ? AND address <> ?").run(n.toLowerCase(), a);
         st.upsert.run(a, n, n.toLowerCase(), "official", now);
       }
@@ -93,7 +93,7 @@ export function createAliases({ db, rpc, labelsFile, log = console.log }) {
   loadOfficial();
   setInterval(loadOfficial, 5 * 60000).unref();
 
-  // limite de tentativas: 12 por 10 minutos por origem (hash do IP, só em memória)
+  // attempt limit: 12 per 10 minutes per origin (IP hash, in memory only)
   const salt = crypto.randomBytes(16).toString("hex");
   const tries = new Map();
   function allow(ip) {
@@ -121,7 +121,7 @@ export function createAliases({ db, rpc, labelsFile, log = console.log }) {
       if (owner && owner.address !== a) throw new AliasError("name_taken", "esse apelido já pertence a outro endereço");
     }
     if (!st.hasAddr.get(a)) throw new AliasError("address_unused", "esse endereço ainda não tem nenhuma transação na rede");
-    // a assinatura vale para o texto exato que o dono assinou (o nome como digitado, sem os espaços das pontas)
+    // the signature covers the exact text the owner signed (the name as typed, trimmed)
     const signed = String(name ?? "").trim();
     let ok = false;
     for (const candidate of new Set([a, raw])) {

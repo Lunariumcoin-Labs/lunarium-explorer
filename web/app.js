@@ -1,4 +1,4 @@
-// LunariumCoin Explorer — site (sem framework, sem build). Rotas: /, /blocks, /block/:id, /tx/:id,
+// LunariumCoin Explorer — site (no framework, no build step). Routes: /, /blocks, /block/:id, /tx/:id,
 // /address/:a, /masternodes, /richlist, /network, /movement, /supply, /charts, /mempool, /api-docs.
 import { startSpace } from "./space.js";
 import { icons } from "./art.js";
@@ -28,7 +28,7 @@ function compact(n) {
   if (n === null || n === undefined) return "—";
   return new Intl.NumberFormat(intlTag(), { notation: "compact", maximumFractionDigits: 2 }).format(n);
 }
-// Valor em XLN vindo da API como texto ("123.45000000"): agrupa a parte inteira sem perder precisão.
+// XLN value from the API as a string ("123.45000000"): groups the integer part without losing precision.
 function amount(str, { unit = true, maxDec = 8, sign = false } = {}) {
   if (str === null || str === undefined) return "—";
   let s = String(str);
@@ -68,7 +68,7 @@ const flag = (cc) => countryFlag(cc);
 const regionName = (cc) => { try { return new Intl.DisplayNames([intlTag().split("-u-")[0]], { type: "region" }).of(cc) || cc; } catch { return cc; } };
 const kindPill = (k) => ({ coinstake: `<span class="pill stake">${t("kStake")}</span>`, coinbase: `<span class="pill coinbase">${t("kCoinbase")}</span>` }[k] || `<span class="pill">${t("kTransfer")}</span>`);
 const copyBtn = (text) => `<button class="copy" data-copy="${esc(text)}" title="${esc(t("copy"))}" aria-label="${esc(t("copy"))}">${icons.copy}</button>`;
-// Apelidos (alias): carregados uma vez e atualizados depois de um registro.
+// Aliases: loaded once and refreshed after a claim.
 let NAMES = {};
 async function loadNames() { try { NAMES = (await api("names")).names || {}; } catch {} }
 const aliasBadge = (v) => (v.official ? `<span class="alias-ok" title="${esc(t("aliasOfficial"))}">${icons.check}</span>` : "");
@@ -96,7 +96,7 @@ function errorView(e) {
   return `<div class="empty-state page-enter"><h1>${nf404 ? "404" : "!"}</h1><h2>${esc(nf404 ? t("notFound") : t("errorTitle"))}</h2><p>${esc(nf404 ? t("notFoundHint") : e?.message || "")}</p><p><a class="btn" href="/" data-link>${t("backHome")}</a></p></div>`;
 }
 
-// ---------------- gráficos (SVG feitos à mão, com dica ao passar o mouse) ----------------
+// ---------------- charts (hand-made SVG, with hover tooltips) ----------------
 function lineChart(rows, { y, label, fmt = (v) => nf(v), height = 220, alt = false, xLabel = (r) => r.day }) {
   if (!rows.length) return `<div class="soft card-pad">${t("noData")}</div>`;
   const W = 720, H = height, P = { l: 52, r: 12, t: 14, b: 26 };
@@ -162,9 +162,9 @@ function qrSvg(text) {
   return `<svg viewBox="-2 -2 ${n + 4} ${n + 4}" shape-rendering="crispEdges" role="img" aria-label="QR"><path d="${d}" fill="#06101f"/></svg>`;
 }
 
-// ---------------- páginas ----------------
-let liveHandler = null; // a página atual recebe os eventos de bloco novo por aqui
-let pageCleanup = null; // desliga animações/timers da página ao sair dela
+// ---------------- pages ----------------
+let liveHandler = null; // the current page receives new-block events through this
+let pageCleanup = null; // stops the page's animations/timers when leaving it
 let firstRender = true;
 
 function statTiles(s) {
@@ -211,9 +211,9 @@ function txRows(list, isNew = false) {
   return list.map((x) => `<tr${isNew ? ' class="row-new"' : ""}><td>${txLink(x.txid, 8)}</td><td>${kindPill(x.kind)}</td><td class="hide-sm muted">${ago(x.time)}</td><td class="num">${amount(x.value)}</td></tr>`).join("");
 }
 
-// Astronauta da abertura da carteira V5 (garimpo.mp4): só o trecho final, diante da logo, com o código
-// refletido no capacete. Toca em loop com uma passagem suave; no celular, com economia de dados ou para quem
-// prefere menos movimento, fica só a imagem de capa (último quadro).
+// Astronaut from the V5 wallet opening video (garimpo.mp4): only the final scene, in front of the logo, with code
+// reflected on the helmet. It loops with a smooth transition; on phones, with data saver or for people who
+// prefer reduced motion, only the poster image (last frame) is shown.
 const HERO_LOOP = { start: 11.5, end: 19.9 };
 function heroVideoHtml() {
   return `<div class="hero-video">
@@ -500,7 +500,7 @@ async function pageNetwork() {
   }));
 }
 
-// Seeds: nós da versão atual (4.x) que estão na ponta da rede, prontos para o .conf e para o console da carteira.
+// Seeds: current-version (4.x) nodes at the network tip, ready for the .conf file and the wallet console.
 function seedsHtml(list, tip) {
   const good = list.filter((x) => /Core:4\./.test(x.subver || "") && ((x.synced_blocks > 0 && x.synced_blocks >= tip - 100) || (!(x.synced_blocks > 0) && x.startingheight >= tip - 1440)));
   const hostPort = (x) => (x.ip.includes(":") ? `[${x.ip}]` : x.ip) + ":13990";
@@ -741,7 +741,7 @@ document.addEventListener("submit", (e) => {
   if (f.id === "topSearch" || f.hasAttribute("data-search")) { e.preventDefault(); doSearch(f.q.value); f.q.blur(); }
   if (f.hasAttribute("data-filter")) { e.preventDefault(); go(`${location.pathname}?q=${encodeURIComponent(f.q.value)}`, true); }
 });
-// Menu de idiomas (com bandeiras): abre/fecha, escolhe, teclado (setas, Enter, Esc) e clique fora fecha.
+// Language menu (with flags): open/close, select, keyboard (arrows, Enter, Esc); clicking outside closes it.
 function langMenu(open) {
   const btn = $("#lang .lang-btn"), menu = $("#lang .lang-menu");
   if (!btn || !menu) return;
@@ -777,7 +777,7 @@ $("#menuBtn").addEventListener("click", () => {
 });
 window.addEventListener("popstate", render);
 
-// eventos ao vivo: um só canal para o site inteiro
+// live events: a single channel for the whole site
 function connectStream() {
   if (!("EventSource" in window)) return;
   const es = new EventSource("/api/v1/stream");
@@ -790,6 +790,6 @@ const namesReady = loadNames();
 startVisits();
 startSpace($("#space"));
 chrome();
-// os apelidos chegam antes da primeira página (no máximo 1,5 s de espera; sem eles a página abre igual)
+// aliases arrive before the first page (at most 1.5 s wait; without them the page opens anyway)
 Promise.race([namesReady, new Promise((r) => setTimeout(r, 1500))]).then(render);
 connectStream();

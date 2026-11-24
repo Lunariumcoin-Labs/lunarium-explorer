@@ -1,7 +1,7 @@
-// Teste ponta a ponta do registro de apelido com uma chave DESCARTÁVEL:
-// assina como a carteira faz (signmessage) e envia ao explorador, que confere no node (verifymessage).
-//   node tools/claim-test.mjs <url-do-explorador> <banco-de-teste.db>
-// Precisa de @noble/curves só para o teste: NOBLE_FROM=<pasta com node_modules/@noble/curves> (padrão: pasta atual).
+// End-to-end test of alias claims with a THROWAWAY key:
+// signs like the wallet does (signmessage) and posts to the explorer, which checks it on the node (verifymessage).
+//   node tools/claim-test.mjs <explorer-url> <test-db.db>
+// Needs @noble/curves for the test only: NOBLE_FROM=<folder with node_modules/@noble/curves> (default: current folder).
 import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { DatabaseSync } from "node:sqlite";
@@ -25,7 +25,7 @@ const pub = Buffer.from(secp256k1.getPublicKey(priv, true));
 const address = b58check(Buffer.concat([Buffer.from([48]), crypto.createHash("ripemd160").update(sha(pub)).digest()]));
 const other = b58check(Buffer.concat([Buffer.from([48]), crypto.createHash("ripemd160").update(sha(Buffer.from(secp256k1.getPublicKey(secp256k1.utils.randomPrivateKey(), true)))).digest()]));
 
-// o endereço descartável precisa "existir" no banco de teste (como se tivesse uma transação)
+// the throwaway address must "exist" in the test database (as if it had a transaction)
 const db = new DatabaseSync(DBFILE);
 db.prepare("INSERT OR IGNORE INTO addresses (address, first_height, last_height, tx_count) VALUES (?, 1, 1, 1)").run(address);
 db.prepare("INSERT OR IGNORE INTO addresses (address, first_height, last_height, tx_count) VALUES (?, 1, 1, 1)").run(other);
@@ -52,7 +52,7 @@ for (const [label, body, check] of cases) {
   if (!ok) fails++;
   console.log(`${ok ? "OK  " : "FALHOU"} ${label} → ${JSON.stringify(r).slice(0, 140)}`);
 }
-// depois do válido, o nome aparece em /names e na busca
+// after the valid claim, the name shows up in /names and in search
 await claim({ address, name: "Nave Teste 01", signature: signMessage(priv, "Nave Teste 01") });
 const names = await (await fetch(BASE + "/api/v1/names")).json();
 const search = await (await fetch(BASE + "/api/v1/search?q=" + encodeURIComponent("nave teste"))).json();

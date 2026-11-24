@@ -1,4 +1,4 @@
-// Teste do indexador: sincroniza até a altura pedida num banco descartável e mostra a velocidade.
+// Indexer test: syncs up to the given height into a throwaway database and shows the speed.
 //   node --env-file=<rpc.env> tools/index-test.mjs <banco.db> <altura-final>
 import { openDb } from "../server/db.mjs";
 import { createRpc } from "../server/rpc.mjs";

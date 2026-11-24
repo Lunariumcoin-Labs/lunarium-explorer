@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Envia o código para o servidor (host SSH em EXPLORER_SSH_HOST) e reinicia o serviço do explorador.
-# O banco (/var/lib/lunarium-explorer/data) e a configuração (/etc/lunarium-explorer) não são tocados.
+# Uploads the code to the server (SSH host in EXPLORER_SSH_HOST) and restarts the explorer service.
+# The database (/var/lib/lunarium-explorer/data) and the configuration (/etc/lunarium-explorer) are not touched.
 set -euo pipefail
 HOST="${EXPLORER_SSH_HOST:-lunarium-painel-vps}"
 cd "$(dirname "$0")/.."
 node --check server/index.mjs
-for f in server/*.mjs web/*.js web/i18n/*.js; do node --check "$f" 2>/dev/null || { echo "erro de sintaxe em $f"; node --check "$f"; exit 1; }; done
+for f in server/*.mjs web/*.js web/i18n/*.js; do node --check "$f" 2>/dev/null || { echo "syntax error in $f"; node --check "$f"; exit 1; }; done
 TMP=$(mktemp -t lx.XXXXXX.tgz)
 tar --exclude=data --exclude=node_modules --exclude=.claude -czf "$TMP" package.json server web tools
 scp -q -o BatchMode=yes "$TMP" "$HOST:/tmp/lunarium-explorer.tgz"

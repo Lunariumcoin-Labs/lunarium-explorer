@@ -1,4 +1,4 @@
-// Explorador oficial da LunariumCoin: indexador + API + site, num processo só.
+// Official LunariumCoin explorer: indexer + API + site in a single process.
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -32,7 +32,7 @@ function readBody(req, max = 2048) {
   });
 }
 
-// ---------- arquivos do site ----------
+// ---------- site files ----------
 const MIME = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml",
@@ -57,7 +57,7 @@ function serveStatic(req, res, pathname) {
   try { stat = fs.statSync(file); } catch { return false; }
   if (!stat.isFile()) return false;
   const ext = path.extname(file).toLowerCase();
-  // imagens: 7 dias; código (js/css): sempre revalida (304 se não mudou), para atualização chegar na hora
+  // images: 7 days; code (js/css): always revalidated (304 if unchanged) so updates arrive immediately
   const longCache = pathname.startsWith("/assets/");
   const lastMod = stat.mtime.toUTCString();
   if (!longCache && req.headers["if-modified-since"] === lastMod) {
@@ -71,7 +71,7 @@ function serveStatic(req, res, pathname) {
     "accept-ranges": "bytes",
     "cache-control": longCache ? "public, max-age=604800" : "no-cache",
   };
-  // pedido por partes (vídeo): o navegador baixa só o trecho que vai tocar
+  // range request (video): the browser downloads only the part it is about to play
   const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ""));
   if (range && (range[1] || range[2])) {
     let start = range[1] ? Number(range[1]) : stat.size - Number(range[2]);
@@ -113,7 +113,7 @@ function sendText(res, status, text) {
   res.end(data);
 }
 
-// ---------- limite de requisições (por IP, janela de 1 minuto) ----------
+// ---------- request rate limit (per IP, 1-minute window) ----------
 const hits = new Map();
 const LIMIT_PER_MIN = Number(process.env.EXPLORER_RATE_LIMIT || 600);
 function clientIp(req) {
@@ -122,7 +122,7 @@ function clientIp(req) {
   const fwd = local ? String(req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || "").split(",")[0].trim() : "";
   return fwd || remote;
 }
-// Servidores da própria Lunarium (painel de recompensas, API do app, GaláxiaLunarium) não entram no limite.
+// Lunarium's own servers (rewards portal, app API, GaláxiaLunarium) are exempt from the limit.
 const RATE_EXEMPT = new Set(String(process.env.EXPLORER_RATE_EXEMPT || "").split(",").map((x) => x.trim()).filter(Boolean));
 function rateLimited(ip) {
   if (/^(::1|127\.0\.0\.1|::ffff:127\.0\.0\.1)$/.test(ip)) return false;
@@ -135,7 +135,7 @@ function rateLimited(ip) {
 }
 setInterval(() => { const now = Date.now(); for (const [ip, h] of hits) if (now - h.start > 120000) hits.delete(ip); }, 60000).unref();
 
-// ---------- eventos ao vivo (novos blocos) ----------
+// ---------- live events (new blocks) ----------
 const streams = new Set();
 let lastTip = null;
 setInterval(() => {
@@ -149,7 +149,7 @@ setInterval(() => {
 }, 2000).unref();
 setInterval(() => { for (const res of streams) res.write(": ping\n\n"); }, 25000).unref();
 
-// ---------- rotas da API nova ----------
+// ---------- new API routes ----------
 async function apiV1(req, res, parts, query) {
   const [name, a, b] = parts;
   const short = "public, max-age=5";
@@ -228,7 +228,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, height: t.height, behindSeconds: t.time ? Math.round(Date.now() / 1000 - t.time) : null });
     }
     if (SPA_ROUTES.test(pathname)) return sendIndex(res);
-    // páginas do explorador antigo (eIquidus) que não existem aqui: leva para a equivalente
+    // pages of the old explorer (eIquidus) that do not exist here: redirect to the equivalent
     const legacy = /^\/orphans\/?$/.test(pathname) ? "/blocks" : /^\/(markets|reward)(\/.*)?$/.test(pathname) ? "/" : null;
     if (legacy) { res.writeHead(301, { location: legacy, "cache-control": "public, max-age=86400" }); return res.end(); }
     if (pathname === "/favicon.ico") return serveStatic(req, res, "/assets/logo.png") || sendText(res, 404, "");
@@ -246,7 +246,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(config.port, config.host, () => log(`explorador em http://${config.host}:${config.port}`));
 live.start();
 
-// O indexador roda numa thread própria (escrita no banco sem travar o site); reinicia sozinho se cair.
+// The indexer runs in its own thread (database writes never block the site); it restarts itself if it dies.
 let worker = null;
 function startWorker() {
   worker = new Worker(new URL("./indexer-worker.mjs", import.meta.url), {

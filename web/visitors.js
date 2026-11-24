@@ -1,5 +1,5 @@
-// Visitantes do explorador: registro da visita (sem cookies; só um id de sessão no sessionStorage),
-// faixa "Pulso da comunidade" e o globo de pontos com os países (adaptado do globo do lunariumcoin.com).
+// Explorer visitors: visit tracking (no cookies; only a session id in sessionStorage),
+// the "Community pulse" strip and the dot globe with countries (adapted from the lunariumcoin.com globe).
 import { t, intlTag } from "./i18n.js";
 import { countryFlag } from "./flags.js";
 
@@ -19,7 +19,7 @@ function post(a, extra = {}) {
 let counted = false;
 
 export function startVisits() {
-  // navegador automatizado (robôs que executam JavaScript) não conta
+  // automated browsers (bots that run JavaScript) are not counted
   try { if (navigator.webdriver) return; } catch {}
   let id = null;
   try { id = sessionStorage.getItem("xln_explorer_sid"); } catch {}
@@ -27,8 +27,8 @@ export function startVisits() {
     id = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
     try { sessionStorage.setItem("xln_explorer_sid", id); } catch {}
   }
-  // Só conta quem fica de verdade: um toque/clique/tecla real ou 10 s com a página visível.
-  // Robôs abrem a página e saem em ~3 s sem interagir (23/11/2026: 632 "visitantes" falsos assim).
+  // Count only people who actually stay: a real tap/click/key press or 10 s with the page visible.
+  // Bots open the page and leave after ~3 s without interacting (2026-11-23: 632 fake "visitors" like that).
   const evs = ["pointerdown", "touchstart", "keydown", "wheel"];
   let shown = 0;
   const timer = setInterval(() => { if (!document.hidden && ++shown >= 10) go(); }, 1000);
@@ -82,7 +82,7 @@ const ICON_GLOBE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICON_USER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>';
 const ICON_CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>';
 
-// Liga a faixa e o globo da página atual. Devolve uma função para desligar (ao sair da página).
+// Mounts the strip and the globe on the current page. Returns a function that unmounts them (when leaving the page).
 export function mountVisitors(root) {
   const cleanup = [];
   const cur = { vTotal: 0, vOnline: 0, vToday: 0 };

@@ -1,15 +1,15 @@
-// Dados "ao vivo" que não ficam no banco: rede, masternodes, peers, mempool, preço.
-// Cada item é atualizado em segundo plano no seu próprio ritmo; a API só lê o último valor.
+// "Live" data that is not stored in the database: network, masternodes, peers, mempool, price.
+// Each item refreshes in the background at its own pace; the API only reads the latest value.
 import { getMeta, setMeta } from "./db.mjs";
 
 export function createLive({ db, rpc, priceUrl, log = console.log }) {
   const state = {
     network: null,      // { difficulty, hashrate, connections, version, protocol, subversion }
-    masternodes: [],    // saída de listmasternodes
-    mnCount: null,      // saída de getmasternodecount
-    peers: [],          // getpeerinfo + país
-    mempool: [],        // txids sem confirmação
-    txoutset: null,     // gettxoutsetinfo (conferência da oferta pelo próprio node)
+    masternodes: [],    // output of listmasternodes
+    mnCount: null,      // output of getmasternodecount
+    peers: [],          // getpeerinfo + country
+    mempool: [],        // unconfirmed txids
+    txoutset: null,     // gettxoutsetinfo (supply cross-check by the node itself)
     price: null,        // { usd, change24h, source, volume24h, at }
     updated: {},
   };
@@ -37,9 +37,9 @@ export function createLive({ db, rpc, priceUrl, log = console.log }) {
     state.updated.masternodes = Date.now();
   }
 
-  // Nós de versão antiga (2.x/3.x, protocolo < 70960) estão parados fora da ponta da rede e não servem para nada:
-  // o node do explorador não conversa com eles (ban de 1 ano). Só vale para o NOSSO node — tirar da rede
-  // inteira exige o spork de versão mínima (SPORK_14), que depende da chave spork.
+  // Old-version nodes (2.x/3.x, protocol < 70960) are stuck off the network tip and serve no purpose:
+  // the explorer node does not talk to them (1-year ban). This only applies to OUR node — removing them from the
+  // whole network requires the minimum-version spork (SPORK_14), which needs the spork key.
   const MIN_PROTOCOL = Number(process.env.EXPLORER_MIN_PEER_PROTOCOL || 70960);
   async function banOldPeers(peers) {
     for (const p of peers) {
@@ -64,7 +64,7 @@ export function createLive({ db, rpc, priceUrl, log = console.log }) {
     const ips = [...new Set(peers.map((p) => hostOf(p.addr)).filter((ip) => ip && !geo.has(ip) && isPublicIp(ip)))];
     if (ips.length) {
       try {
-        // ip-api.com (lote de até 100 IPs): só o IP público do nó, que já é público na rede P2P.
+        // ip-api.com (batches of up to 100 IPs): only the node's public IP, which is already public on the P2P network.
         const r = await fetch("http://ip-api.com/batch?fields=status,query,country,countryCode", {
           method: "POST", body: JSON.stringify(ips.slice(0, 100)), signal: AbortSignal.timeout(15000),
         });
@@ -73,8 +73,8 @@ export function createLive({ db, rpc, priceUrl, log = console.log }) {
         setMeta(db, "peer_geo", JSON.stringify(Object.fromEntries([...geo].slice(-2000))));
       } catch (e) { log(`geo dos peers indisponível: ${e.message}`); }
     }
-    // Infraestrutura da Lunarium (VPS da hospedagem/explorador) não aparece na lista pública: qualquer peer
-    // conectado por nome (addnode=host) e os IPs de EXPLORER_HIDE_PEERS.
+    // Lunarium infrastructure (hosting/explorer servers) is not shown in the public list: any peer
+    // connected by name (addnode=host) and the IPs in EXPLORER_HIDE_PEERS.
     const hidden = new Set(String(process.env.EXPLORER_HIDE_PEERS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean));
     const isIp = (h) => /^[0-9.]+$/.test(h || "") || (h || "").includes(":");
     peers = peers.filter((p) => { const h = hostOf(p.addr); return h && isIp(h) && !hidden.has(h.toLowerCase()); });

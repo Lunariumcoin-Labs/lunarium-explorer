@@ -1,11 +1,11 @@
-// API pública nova do explorador (/api/v1/...). Valores em XLN como texto com 8 casas, para não perder
-// precisão (a oferta total passa do limite exato de um número de ponto flutuante).
+// The explorer's new public API (/api/v1/...). XLN values are strings with 8 decimals so no precision
+// is lost (the total supply exceeds the exact range of a floating-point number).
 import { expectedSupply, MINT_HEIGHT, MINT_AMOUNT } from "./emission.mjs";
 import { getMeta, setMeta } from "./db.mjs";
 import { canonicalAddress, legacyAddress, isValidAddress } from "./address.mjs";
 
 const SATS = 100000000n;
-// consensus.nCoinbaseMaturity da mainnet (chainparams.cpp): confirmações para gastar coinbase/coinstake
+// mainnet consensus.nCoinbaseMaturity (chainparams.cpp): confirmations before coinbase/coinstake can be spent
 const COINBASE_MATURITY = 60;
 
 export function xln(sats) {
@@ -20,7 +20,7 @@ export class HttpError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-// Limite de moedas novas por bloco = GetBlockValue(altura) da regra do core (masternode.cpp), em satoshis.
+// Max new coins per block = the core rule GetBlockValue(height) (masternode.cpp), in satoshis.
 const LIMIT_SQL = `(CASE
   WHEN height = ${MINT_HEIGHT} THEN ${MINT_AMOUNT * 1e8} + 1000000000
   WHEN height > 6928901 THEN 100000000
@@ -51,7 +51,7 @@ export function createApi({ db, rpc, live, aliases }) {
       FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id LEFT JOIN txs st ON st.id = o.spent_tx
       WHERE o.tx_id = ? ORDER BY o.n`),
     outputOne: q("SELECT o.value, o.type, a.address FROM outputs o LEFT JOIN addresses a ON a.id = o.addr_id WHERE o.tx_id = ? AND o.n = ?"),
-    // recebido/enviado acumulam o stake que volta a cada bloco e passam do limite exato de um Number: vêm como texto
+    // received/sent accumulate the stake that comes back every block and exceed a Number's exact range: read as text
     addr: q("SELECT id, address, balance, CAST(received AS TEXT) AS received, CAST(sent AS TEXT) AS sent, tx_count, first_height, last_height FROM addresses WHERE address = ?"),
     addrRank: q("SELECT COUNT(*) + 1 AS r FROM addresses WHERE balance > ?"),
     addrTxs: q(`SELECT at.height, at.received, at.sent, at.balance, t.txid, t.time, t.kind
@@ -80,9 +80,9 @@ export function createApi({ db, rpc, live, aliases }) {
 
   let lastNodeCheck = null;
 
-  // ---------- auditoria da emissão (incremental: só confere blocos novos) ----------
+  // ---------- issuance audit (incremental: only new blocks are checked) ----------
   function audit() {
-    // se a regra mudar (ex.: altura do mint), a conferência recomeça do bloco 0 com a regra nova
+    // if the rule changes (e.g. the mint height), the check restarts from block 0 with the new rule
     const rule = `v2:mint@${MINT_HEIGHT}`;
     if (getMeta(db, "audit_rule") !== rule) {
       setMeta(db, "audit_violations", "[]");
@@ -102,8 +102,8 @@ export function createApi({ db, rpc, live, aliases }) {
     return { checkedUpTo: tip, violations: violations.length, list: violations.slice(0, 20) };
   }
 
-  // Somas da cadeia mantidas de forma incremental (só os blocos novos entram na conta; num reorg recalcula tudo).
-  // Oferta = moedas criadas − taxas pagas: é exatamente a soma das saídas não gastas, sem varrer milhões de saídas.
+  // Chain totals kept incrementally (only new blocks are added; a reorg recomputes everything).
+  // Supply = coins created − fees paid: exactly the sum of unspent outputs, without scanning millions of outputs.
   const sumRange = big(`SELECT COALESCE(SUM(minted), 0) AS m, COALESCE(SUM(fees), 0) AS f,
       COALESCE(SUM(CASE WHEN kind = 'pos' THEN fees ELSE 0 END), 0) AS burned FROM blocks WHERE height > ? AND height <= ?`);
   const hashAt = q("SELECT hash FROM blocks WHERE height = ?");
@@ -124,7 +124,7 @@ export function createApi({ db, rpc, live, aliases }) {
     const held = sums.m - sums.f;
     const m = sums.m, burned = sums.burned;
     const expected = tip >= 0 ? BigInt(Math.round(expectedSupply(tip) * 1e8)) : 0n;
-    // conferência com o próprio node: só vale com as duas contas na MESMA altura
+    // cross-check with the node itself: only valid when both totals are at the SAME height
     const raw = live.state.txoutset;
     if (raw && raw.height === tip && lastNodeCheck?.height !== tip) {
       const nodeSats = BigInt(Math.round(Number(raw.total_amount) * 1e8));
@@ -143,7 +143,7 @@ export function createApi({ db, rpc, live, aliases }) {
     };
   }
 
-  // O resumo da rede muda a cada bloco (ou a cada poucos segundos nos dados ao vivo): guarda por 3 s.
+  // The network summary changes every block (or every few seconds for live data): cached for 3 s.
   let statsCache = { at: 0, hash: null, v: null };
   function stats() {
     const now = Date.now();
@@ -222,7 +222,7 @@ export function createApi({ db, rpc, live, aliases }) {
         outputs: st.outputsOf.all(t.id).map((o) => ({ n: o.n, address: o.address, value: xln(o.value), type: o.type, spentBy: o.spent_txid || null, spentHeight: o.spent_height })),
       };
     }
-    // ainda na mempool?
+    // still in the mempool?
     let raw;
     try { raw = await rpc.call("getrawtransaction", txid, 1); } catch { raw = null; }
     if (!raw) throw new HttpError(404, "transação não encontrada");
@@ -276,8 +276,8 @@ export function createApi({ db, rpc, live, aliases }) {
     };
   }
 
-  // Carteiras (o APK) montam envios com esta lista, então ela vem inteira, sem limite (decisão do dono).
-  // spendable=false marca recompensa de stake/bloco ainda imatura, que a rede recusa gastar.
+  // Wallets (the Android app) build sends from this list, so it is returned in full, with no limit (owner's decision).
+  // spendable=false marks a stake/block reward that is still immature, which the network refuses to spend.
   function addressUtxos(a) {
     const r = st.addr.get(canonicalAddress(a));
     if (!r) throw new HttpError(404, "endereço sem movimentação");

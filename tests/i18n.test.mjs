@@ -1,4 +1,4 @@
-// Todos os idiomas têm todas as frases usadas pelo site, com os mesmos marcadores {x}.
+// Every language has every phrase the site uses, with the same {x} placeholders.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
