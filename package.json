@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Explorador de blocos oficial da LunariumCoin (XLN): indexador próprio + API + site.",
+  "license": "MIT",
   "type": "module",
   "engines": { "node": ">=22.13" },
   "scripts": {

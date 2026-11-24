@@ -26,3 +26,7 @@ Deploy: `bash tools/deploy.sh`. Testes: `npm test`.
 ## Variáveis
 
 `XLN_RPC_URL`, `XLN_RPC_USER`, `XLN_RPC_PASS`, `EXPLORER_DB`, `EXPLORER_HOST`, `EXPLORER_PORT`, `EXPLORER_BATCH`, `EXPLORER_PRICE_URL` (preço do GaláxiaLunarium), `EXPLORER_PUBLIC_URL`, `EXPLORER_RATE_LIMIT`.
+
+## Licença
+
+[MIT](LICENSE) © 2026 Lunariumcoin Labs. As bandeiras em `web/assets/flags/` vêm do projeto flag-icons, também MIT (`web/assets/flags/LICENSE.txt`).
