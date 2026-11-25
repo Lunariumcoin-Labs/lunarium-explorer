@@ -740,7 +740,7 @@ function chrome() {
       <div class="copy-note">${t("footerNote")}</div></div>
     <div><h4>${t("fExplore")}</h4><a href="/blocks" data-link>${t("nav_blocks")}</a><a href="/masternodes" data-link>${t("nav_masternodes")}</a><a href="/richlist" data-link>${t("nav_richlist")}</a><a href="/mempool" data-link>${t("mempool")}</a></div>
     <div><h4>${t("fNetwork")}</h4><a href="/network" data-link>${t("nav_network")}</a><a href="/supply" data-link>${t("nav_supply")}</a><a href="/charts" data-link>${t("nav_charts")}</a><a href="/api-docs" data-link>API</a></div>
-    <div><h4>LunariumCoin</h4><a href="https://lunariumcoin.com" rel="noopener" target="_blank">lunariumcoin.com</a><a href="https://github.com/Lunariumcoin-Labs" rel="noopener" target="_blank">GitHub</a><a href="https://galaxia.lunariumcoin.com/?coin=xln" rel="noopener" target="_blank">GaláxiaLunarium</a><a href="https://t.me/+ctL9XBvKQW42ZGUx" rel="noopener" target="_blank">Telegram</a></div>
+    <div><h4>LunariumCoin</h4><a href="https://lunariumcoin.com" rel="noopener" target="_blank">lunariumcoin.com</a><a href="https://github.com/Lunariumcoin-Labs" rel="noopener" target="_blank">GitHub</a><a href="https://galaxia.lunariumcoin.com/?coin=xln" rel="noopener" target="_blank">GaláxiaLunarium</a><a href="https://t.me/+ctL9XBvKQW42ZGUx" rel="noopener" target="_blank">Telegram</a><a href="https://discord.gg/wbZ3PVVA7Q" rel="noopener" target="_blank">Discord</a><a href="https://twitter.com/lunariumcoin/" rel="noopener" target="_blank">X (Twitter)</a></div>
   </div>`;
 }
 
