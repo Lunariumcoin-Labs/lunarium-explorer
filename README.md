@@ -16,7 +16,7 @@ The official LunariumCoin (XLN) block explorer, live at [explorerxln.com](https:
 - **Issuance audit** (`server/api.mjs`): for every block, new coins ≤ `GetBlockValue(height)` (+ fees in PoW blocks, + the 47M mint at block 1,275,000, the height the network accepted), the same rule as `ConnectBlock`. The supply is also cross-checked against the node's own `gettxoutsetinfo` at the same height.
 - **New API** at `/api/v1/*` (XLN values as strings with 8 decimals) and **full eIquidus compatibility** at `/api/*` and `/ext/*` (`server/compat.mjs`): the Android app, the rewards portal and GaláxiaLunarium keep working unchanged. `tools/compat-diff.mjs` compares the answers with the previous explorer.
 - **Address aliases**: owners claim a name by signing it with their wallet (`signmessage`); the node verifies the signature (`verifymessage`). Official team labels carry a verified badge.
-- **Website** (`web/`): no framework and no build step; 10 languages (the same as the V5 wallet), original vector artwork (astronaut, planets, canvas galaxy), live updates over SSE.
+- **Website** (`web/`): no framework and no build step; 34 languages (the same as GaláxiaLunarium), with hreflang alternates for search engines, original vector artwork (astronaut, planets, canvas galaxy), live updates over SSE.
 - **Visitor counter**: no cookies and no stored IP addresses; only the country is derived from the IP.
 
 ## Server layout

@@ -678,6 +678,19 @@ const ROUTES = [
 ];
 const NAV = [["/blocks", "blocks"], ["/masternodes", "masternodes"], ["/richlist", "richlist"], ["/network", "network"], ["/movement", "movement"], ["/supply", "supply"], ["/charts", "charts"], ["/claim", "claim"], ["/api-docs", "api"]];
 
+// Tells search engines that every page exists in all site languages (?lang=xx), so each one can be indexed.
+function setAlternates(path) {
+  document.querySelectorAll('link[data-alt]').forEach((l) => l.remove());
+  const base = location.origin + path;
+  const add = (hreflang, href) => {
+    const l = document.createElement("link");
+    l.rel = "alternate"; l.hreflang = hreflang; l.href = href; l.dataset.alt = "1";
+    document.head.appendChild(l);
+  };
+  for (const l of LANGS) add(l.code, `${base}?lang=${encodeURIComponent(l.code)}`);
+  add("x-default", base);
+}
+
 async function render() {
   liveHandler = null;
   if (pageCleanup) { try { pageCleanup(); } catch {} pageCleanup = null; }
@@ -685,6 +698,7 @@ async function render() {
   firstRender = false;
   const url = new URL(location.href);
   const path = url.pathname;
+  setAlternates(path);
   let route = ROUTES.find(([re]) => re.test(path));
   document.querySelectorAll("#mainnav a").forEach((a) => a.classList.toggle("active", !!route && a.dataset.key === route[2]));
   $("#mainnav").classList.remove("open");
